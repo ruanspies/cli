@@ -1,4 +1,4 @@
-module github.com/alis-exchange/cli
+module github.com/alis-exchange/cli/alis
 
 go 1.17
 
