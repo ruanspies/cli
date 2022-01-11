@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package {{.Organisation}}.{{.Product}}.{{.Contract}}.{{.Neuron}}.{{.VersionMajor}};
+
+option go_package = "go.protobuf.{{.Organisation}}.alis.exchange/{{.Organisation}}/{{.Product}}/{{.Contract}}/{{.Neuron}}/{{.VersionMajor}}";
+
+// Add comment here...
+service Service {
+    // Give a detailed description of what this method does...
+    rpc MyMethod1 (MyMethod1Request) returns (MyMethod1Response) {}
+}
+
+// Request message for [{{.Organisation}}.{{.Product}}.{{.Contract}}.{{.Neuron}}.{{.VersionMajor}}.Service.MyMethod1]
+message MyMethod1Request {
+    // My first argument
+    string attr_1 = 1;
+    // My array of numbers
+    repeated int32 attr_2 = 2;
+}
+
+// Response message for [{{.Organisation}}.{{.Product}}.{{.Contract}}.{{.Neuron}}.{{.VersionMajor}}.Service.MyMethod1]
+message MyMethod1Response {
+    // My first argument
+    string attr_1 = 1;
+    // My array of numbers
+    repeated int32 attr_2 = 2;
+}
