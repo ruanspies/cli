@@ -1,4 +1,4 @@
-## What?
+## The alis.exchange Command Line Interface
 
 ----------
 
@@ -14,7 +14,7 @@ For example, you can use the `alis` tool to:
 
 ## Prerequisites
 
-----------
+---
 
 ### 1: Google Cloud SDK
 
@@ -43,25 +43,28 @@ Install any one of the **three latest major** [releases of Go](https://golang.
 
 ## Installation
 
+---
+
 ```bash
 # since these are private libraries, we need to set the GOPRIVATE variables to take this into account.  If not set, the go install will try and retrieve the libraries from the public golang.com domain and fail with at 404 not found error.
 go env -w GOPRIVATE=go.protobuf.alis.alis.exchange,github.com/alis-exchange/cli/alis
 go install github.com/alis-exchange/cli/alis@latest
 ```
 
-The above will have installed the `alis` binary in your `$GOPATH/bin` folder.
+The above will install the `alis` binary in your `$GOPATH/bin` folder.
 
-Ensure that you have 
+_Permission errors?_ - since this CLI is a private repository, you may need to set your access token globally to authenticate underlying git requests automatically
+generate a token here: https://github.com/settings/tokens, and run the following script:
 
 ```bash
-# since this CLI is a private repository, you may need to set your access token globally to authenticate underlying git requests automatically
-# generate a token here: https://github.com/settings/tokens
 export GIT_USER = "YOUR_GIT_USERNAME"
 export TOKEN = "YOUR GITHUB PERSONAL ACCESS TOKEN"
 git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
 ```
 
-### Try it out
+## Try it out
+
+---
 
 ```bash
 # Show help 
@@ -70,15 +73,15 @@ alis -h
 # list available organisations
 alis org list
 
-# Setup your local environment for organisation 'myorg'
-alis org get myorg
+# Setup your local environment for organisation 'foo'
+alis org get foo
 
 # list available products
-alis product list myorg
+alis product list foo
 
 # Setup a particular product, say 'ab' in your local environment
-alis product get myorg.ab
+alis product get foo.ab
 
 # In order to run methods in your local environment, you need to generate a key file
-alis product getkey myorg.ab
+alis product getkey foo.ab
 ```
