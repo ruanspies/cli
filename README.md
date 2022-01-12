@@ -1,6 +1,4 @@
-## The alis.exchange Command Line Interface
-
-----------
+# The alis.exchange Command Line Interface
 
 The `alis` command-line tool is the primary CLI tool to create and manage resources on **alis.exchange**.  You can use this tool to perform many common platform tasks either from the command line or in scripts and other automations.
 
@@ -13,8 +11,6 @@ For example, you can use the `alis` tool to:
 * manage the build and deploy steps of your services
 
 ## Prerequisites
-
----
 
 ### 1: Google Cloud SDK
 
@@ -43,8 +39,6 @@ Install any one of the **three latest major** [releases of Go](https://golang.
 
 ## Installation
 
----
-
 ```bash
 # since these are private libraries, we need to set the GOPRIVATE variables to take this into account.  If not set, the go install will try and retrieve the libraries from the public golang.com domain and fail with at 404 not found error.
 go env -w GOPRIVATE=go.protobuf.alis.alis.exchange,github.com/alis-exchange/cli/alis
@@ -63,8 +57,6 @@ git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "htt
 ```
 
 ## Try it out
-
----
 
 ```bash
 # Show help 
