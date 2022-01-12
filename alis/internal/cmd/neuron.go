@@ -863,6 +863,7 @@ the '--publish' flag to push the generated protocol buffers to the go.protobuf r
 		} else {
 			pterm.Debug.Print(fmt.Sprintf("%s\n", out))
 		}
+		pterm.Success.Printf("Generated protocol buffers.\nProto source: %s\n", neuronProtoFullPath)
 
 		// generate ProductDescriptorFile at product level.
 		err = genProductDescriptorFile("organisations/" + organisationID + "/products/" + productID)
@@ -871,7 +872,7 @@ the '--publish' flag to push the generated protocol buffers to the go.protobuf r
 			return
 		}
 
-		pterm.Success.Printf("Generated protocol buffers.\nProto source: %s\n", neuronProtoFullPath)
+		pterm.Success.Println("Generated Product Descriptor File")
 
 		// Publish to protobuf repository if not in local mode.
 		if publishProtocolBuffersFlag {
