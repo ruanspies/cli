@@ -273,11 +273,11 @@ func askUserString(question string, regex string) (string, error) {
 // validateOrgArg is a utility used by the cobra command to validate Arguments.
 func validateOrgArg(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		pterm.Error.Println("requires an organisation argument in the format: ^[a-z]+$")
+		pterm.Error.Println("requires an organisation argument in the format: ^[a-z][a-z0-9]{2,7}$")
 		return fmt.Errorf("")
 	}
 
-	err := validateArgument(args[0], "^[a-z]+$")
+	err := validateArgument(args[0], "^[a-z][a-z0-9]{2,7}$")
 	if err != nil {
 		pterm.Error.Println(err)
 		return fmt.Errorf("")
