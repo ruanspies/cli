@@ -182,6 +182,15 @@ var createProductCmd = &cobra.Command{
 		}
 		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
 
+		// ensure that the product does not yet exist
+		// we perform the check here before asking the user a range of questions - i.e. fail fast ;)
+		_, err = alisProductsClient.GetProduct(cmd.Context(), &pbProducts.GetProductRequest{Name: "organisations/" + organisationID + "/products/" + productID})
+		if err == nil {
+			// the resource exists
+			pterm.Error.Printf("the product (%s.%s) already exist.\n", organisationID, productID)
+			return
+		}
+
 		// Get additional user input
 		displayName, err := askUserString("Please provide a Display Name: ", `^[A-Za-z0-9- ]+$`)
 		if err != nil {
@@ -197,34 +206,6 @@ var createProductCmd = &cobra.Command{
 		if err != nil {
 			pterm.Error.Println(err)
 			return
-		}
-
-		// Create a product
-		op, err := alisProductsClient.CreateProduct(cmd.Context(), &pbProducts.CreateProductRequest{
-			Parent: organisation.GetName(),
-			Product: &pbProducts.Product{
-				DisplayName: displayName,
-				Owner:       owner,
-				Description: description,
-			},
-			ProductId: productID,
-		})
-		if err != nil {
-			pterm.Error.Println(err)
-			return
-		}
-
-		// check if we need to wait for operation to complete.
-		if asyncFlag {
-			pterm.Debug.Printf("Operation:\n%s\n", op)
-			pterm.Success.Printf("Launched Update in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
-		} else {
-			// wait for the long-running operation to complete.
-			err := wait(cmd.Context(), op, "Creating "+organisation.GetName()+"/products/"+productID+" (may take a few minutes)", "Created "+organisation.GetName()+"/products/"+productID, 300, true)
-			if err != nil {
-				pterm.Error.Println(err)
-				return
-			}
 		}
 
 		// Get product Template files.
@@ -274,13 +255,41 @@ var createProductCmd = &cobra.Command{
 		}
 		pterm.Warning.Printf("The above files have been added to your proto repository.\n" +
 			"but have not yet been committed.\n" +
-			"Make the necessary changes to the files, commit them to the master before running the `alis neuron update` " +
+			"Make the necessary changes to the files, commit them before running the `alis product build` " +
 			"command")
 		ptermTip.Printf("You'll need to get a copy of this new product to your local environment.\n"+
 			"Run the command `alis product get %s.%s`", organisationID, productID)
+
+		// Create a product
+		op, err := alisProductsClient.CreateProduct(cmd.Context(), &pbProducts.CreateProductRequest{
+			Parent: organisation.GetName(),
+			Product: &pbProducts.Product{
+				DisplayName: displayName,
+				Owner:       owner,
+				Description: description,
+			},
+			ProductId: productID,
+		})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
+		// check if we need to wait for operation to complete.
+		if asyncFlag {
+			pterm.Debug.Printf("Operation:\n%s\n", op)
+			pterm.Success.Printf("Launched Update in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
+		} else {
+			// wait for the long-running operation to complete.
+			err := wait(cmd.Context(), op, "Creating "+organisation.GetName()+"/products/"+productID+" (may take a few minutes)", "Created "+organisation.GetName()+"/products/"+productID, 300, true)
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+		}
 	},
 	Args:    validateProductArg,
-	Example: pterm.LightYellow("alis product create myorg.aa"),
+	Example: pterm.LightYellow("alis product create foo.aa"),
 }
 
 // getProductCmd represents the get command
