@@ -56,9 +56,9 @@ Ensure that you have
 ```bash
 # since this CLI is a private repository, you may need to set your access token globally to authenticate underlying git requests automatically
 # generate a token here: https://github.com/settings/tokens
-export USER = "YOUR_GIT_USERNAME"
-export TOKEN = "YOUR_GITHUB_PERSONAL ACCESS TOKEN"
-git config --global url."https://${USER}:${TOKEN}@github.com".insteadOf "https://github.com"
+export GIT_USER = "YOUR_GIT_USERNAME"
+export TOKEN = "YOUR GITHUB PERSONAL ACCESS TOKEN"
+git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
 ```
 
 ### Try it out
