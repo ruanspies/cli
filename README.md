@@ -51,8 +51,9 @@ _Permission errors?_ - since this CLI is a private repository, you may need to s
 generate a token here: https://github.com/settings/tokens, and run the following script:
 
 ```bash
-export GIT_USER = "YOUR_GIT_USERNAME"
-export TOKEN = "YOUR GITHUB PERSONAL ACCESS TOKEN"
+
+GIT_USER="YOUR_GIT_USERNAME"
+export TOKEN="YOUR GITHUB PERSONAL ACCESS TOKEN"
 git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
 ```
 
