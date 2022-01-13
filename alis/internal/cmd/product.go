@@ -256,7 +256,7 @@ var createProductCmd = &cobra.Command{
 		pterm.Warning.Printf("The above files have been added to your proto repository.\n" +
 			"but have not yet been committed.\n" +
 			"Make the necessary changes to the files, commit them before running the `alis product build` " +
-			"command")
+			"command.\n")
 		ptermTip.Printf("You'll need to get a copy of this new product to your local environment.\n"+
 			"Run the command `alis product get %s.%s`", organisationID, productID)
 

@@ -289,11 +289,11 @@ func validateOrgArg(cmd *cobra.Command, args []string) error {
 // validateProductArg is a utility used by the cobra command to validate Arguments.
 func validateProductArg(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
-		pterm.Error.Println("requires an organisation.product argument in the format: ^[a-z]+.[a-z]{2}$")
+		pterm.Error.Println("requires an organisation.product argument in the format: ^[a-z][a-z0-9]{2,7}.[a-z]{2}$")
 		return fmt.Errorf("")
 	}
 
-	err := validateArgument(args[0], `^[a-z]+\.[a-z]{2}$`)
+	err := validateArgument(args[0], `^[a-z][a-z0-9]{2,7}\.[a-z]{2}$`)
 	if err != nil {
 		pterm.Error.Println(err)
 		return fmt.Errorf("")
@@ -309,7 +309,7 @@ func validateNeuronArg(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("")
 	}
 
-	err := validateArgument(args[0], `^[a-z]+\.[a-z]{2}\.(resources|services)-[a-z]+-v[0-9]+$`)
+	err := validateArgument(args[0], `^[a-z][a-z0-9]{2,7}\.[a-z]{2}\.(resources|services)-[a-z]+-v[0-9]+$`)
 	if err != nil {
 		pterm.Error.Println(err)
 		return fmt.Errorf("")

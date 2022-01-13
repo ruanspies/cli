@@ -37,6 +37,19 @@ Install any one of the **three latest major** [releases of Go](https://golang.
 
            $ export PATH="$PATH:$(go env GOPATH)/bin"
 
+### 4: Authenticate your local environment to use git
+
+Since this CLI is a private repository, you may need to set your access token globally to authenticate underlying git requests automatically.  You achieve this by using git's global configs which makes use of [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+
+You first need to [Generate a token here](https://github.com/settings/tokens), copy it and run the following script to set up your authentication:
+
+```bash
+export GIT_USER = "YOUR_GIT_USERNAME"
+export TOKEN = "COPY YOUR GITHUB PERSONAL ACCESS TOKEN HERE"
+git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
+```
+
+
 ## Installation
 
 ```bash
@@ -46,16 +59,6 @@ go install github.com/alis-exchange/cli/alis@latest
 ```
 
 The above will install the `alis` binary in your `$GOPATH/bin` folder.
-
-_Permission errors?_ - since this CLI is a private repository, you may need to set your access token globally to authenticate underlying git requests automatically
-generate a token here: https://github.com/settings/tokens, and run the following script:
-
-```bash
-
-GIT_USER="YOUR_GIT_USERNAME"
-export TOKEN="YOUR GITHUB PERSONAL ACCESS TOKEN"
-git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
-```
 
 ## Try it out
 
