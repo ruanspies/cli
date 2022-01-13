@@ -1,14 +1,20 @@
 # The alis.exchange Command Line Interface
 
-The `alis` command-line tool is the primary CLI tool to create and manage resources on **alis.exchange**.  You can use this tool to perform many common platform tasks either from the command line or in scripts and other automations.
+The `alis` command-line interface (CLI) is the primary tool to create and manage resources on **alis.exchange**.  You can use this tool to perform many common platform tasks either from the command line or in scripts and other automations.
 
-For example, you can use the `alis` tool to:
+For example, you can use the `alis` CLI to:
 
 * list organisations and/or products
 * clone a product to your local environment 
 * create a new product / organisation
 * deploy new versions of your product
 * manage the build and deploy steps of your services
+
+## Table of Contents
+
+- [Prerequisites](https://github.com/alis-exchange/cli/blob/main/README.md#prerequisites)
+- [Installation](https://github.com/alis-exchange/cli/blob/main/README.md#installation)
+- [Try it out](https://github.com/alis-exchange/cli/blob/main/README.md#try-it-out)
 
 ## Prerequisites
 
@@ -65,21 +71,35 @@ Since the CLI is in a private repository, you will need to ensure that:
             git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
         
 _Check_
+
 Check if this was successful by running `git config -l`. The response should include:
 
-    ```
-        user.name="YOUR_GITHUB_USERNAME"
-        user.email="YOUR_GITHUB_EMAIL"
-        url.https://{YOUR_GITHUB_USERNAME}:{GITHUB_TOKEN}@github.com.insteadof=https://github.com
-    ```
+    
+    user.name="YOUR_GITHUB_USERNAME"
+    user.email="YOUR_GITHUB_EMAIL"
+    url.https://{YOUR_GITHUB_USERNAME}:{GITHUB_TOKEN}@github.com.insteadof=https://github.com
+    
 
 ## Installation
 
-```bash
-# since these are private libraries, we need to set the GOPRIVATE variables to take this into account.  If not set, the go install will try and retrieve the libraries from the public golang.com domain and fail with at 404 not found error.
+1. Since the CLI is in a private repo, the GOPRIVATE variables need to be set.  If not set, the `go install` will try and retrieve the libraries from the public golang.com domain and fail with at 404 not found error.
+
+```
 go env -w GOPRIVATE=go.protobuf.alis.alis.exchange,github.com/alis-exchange/cli/alis
+```
+2. Install the CLI. This will place the CLI binary in your `$GOPATH/bin` folder.
+
+```
 go install github.com/alis-exchange/cli/alis@latest
 ```
+3. Ensure that `$GOPATH/bin` has been added to your `$PATH` such that your terminal can access the `alis` CLI. The following command appends the path to the `.zshrc` file.
+
+```
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+```
+   **NOTE**
+    
+   This command should be added to the 
 
 The above will install the `alis` binary in your `$GOPATH/bin` folder.
 
