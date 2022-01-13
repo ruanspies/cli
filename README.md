@@ -12,17 +12,24 @@ For example, you can use the `alis` tool to:
 
 ## Prerequisites
 
-### 1: Google Cloud SDK
+The CLI requires the following to be set up in order to run.
 
-The CLI makes use of Google Cloud SDK authentication to seamlessly authenticate your requests to alis.exchange.  Run the following to authenticate your local environment with Google:
+### Google Cloud SDK
 
-    gcloud auth login
+The CLI makes use of Google Cloud SDK authentication to seamlessly authenticate your requests to alis.exchange.  
 
-### 2:  Go
+1. Run `gcloud auth login` from your terminal to authenticate your local environment with Google user account via a web-based authorization flow.
+2. Run `gcloud auth application-default login` to acquire new user credentials to use for Application Default Credentials ([ADC](https://developers.google.com/identity/protocols/application-default-credentials)). These are used in calling Google APIs.
+
+
+### Go
 
 Install any one of the **three latest major** [releases of Go](https://golang.org/doc/devel/release.html).  For installation instructions, see Go’s [Getting Started](https://golang.org/doc/install) guide.
 
-### 3: Protocol Buffer compiler
+_Check_
+After installation, running `go version` should reflect one of the three latest major Go versions.
+
+### Protocol Buffer compiler
 
 1. Install the **[Protocol buffer](https://developers.google.com/protocol-buffers) compiler**, `protoc`, [version 3](https://developers.google.com/protocol-buffers/docs/proto3). For installation instructions, see [Protocol Buffer Compiler Installation](https://grpc.io/docs/protoc-installation/).  This tool significantly simplifies working with our Protocol Buffers.
 
@@ -30,25 +37,41 @@ Install any one of the **three latest major** [releases of Go](https://golang.
 
     1. Install the protocol compiler plugins for Go using the following commands:
 
-           $ go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
-           $ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+            go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+            go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
     2. Update your `PATH` so that the `protoc` compiler can find the plugins:
 
-           $ export PATH="$PATH:$(go env GOPATH)/bin"
+           export PATH="$PATH:$(go env GOPATH)/bin"
+           
+### Git Configuration variables
 
-### 4: Authenticate your local environment to use git
+Since the CLI is in a private repository, you will need to ensure that:
 
-Since this CLI is a private repository, you may need to set your access token globally to authenticate underlying git requests automatically.  You achieve this by using git's global configs which makes use of [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+- Your Git user credentials are consistent with your GitHub account that was granted access to the CLI. Ensure this by running:
+    ```
+    git config --global user.name "YOUR_GITHUB_USERNAME"
+    git config --global user.email "YOUR_GITHUB_EMAIL"
+    ```
+- You access the private repository with a SSH request, rather than a HTTP request. 
+    1. Generate a [new access token](https://github.com/settings/tokens/new) and set:
+        - Note: alis.exchange
+        - Expiration: No expiration
+        - Scopes: Repo (Full control of private repositories)
+    2. Run the following in your terminal:
+        
+            export GIT_USER="YOUR_GITHUB_USERNAME"
+            export TOKEN="PASTE_THE_GENERATED_TOKEN_HERE"
+            git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
+        
+_Check_
+Check if this was successful by running `git config -l`. The response should include:
 
-You first need to [Generate a token here](https://github.com/settings/tokens), copy it and run the following script to set up your authentication:
-
-```bash
-export GIT_USER = "YOUR_GIT_USERNAME"
-export TOKEN = "COPY YOUR GITHUB PERSONAL ACCESS TOKEN HERE"
-git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
-```
-
+    ```
+        user.name="YOUR_GITHUB_USERNAME"
+        user.email="YOUR_GITHUB_EMAIL"
+        url.https://{YOUR_GITHUB_USERNAME}:{GITHUB_TOKEN}@github.com.insteadof=https://github.com
+    ```
 
 ## Installation
 
