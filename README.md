@@ -85,12 +85,12 @@ Check if this was successful by running `git config -l`. The response should inc
 1. Since the CLI is in a private repo, the GOPRIVATE variables need to be set.  If not set, the `go install` will try and retrieve the libraries from the public golang.com domain and fail with at 404 not found error.
 
 ```
-go env -w GOPRIVATE=go.protobuf.alis.alis.exchange,github.com/alis-exchange/cli/alis
+go env -w GOPRIVATE=go.protobuf.alis.alis.exchange,github.com/alis-x/cli/alis
 ```
 2. Install the CLI. This will place the CLI binary in your `$GOPATH/bin` folder.
 
 ```
-go install github.com/alis-exchange/cli/alis@latest
+go install github.com/alis-x/cli/alis@latest
 ```
 3. Ensure that `$GOPATH/bin` has been added to your `$PATH` such that your terminal can access the `alis` CLI. The following command appends the path to the `.zshrc` file.
 
