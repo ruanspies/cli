@@ -23,7 +23,7 @@ package main
 
 import (
 	"embed"
-	"github.com/alis-exchange/cli/alis/internal/cmd"
+	"github.com/alis-x/cli/alis/internal/cmd"
 )
 
 //go:embed templates/go/* templates/product/*
