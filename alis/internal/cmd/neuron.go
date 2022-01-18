@@ -814,8 +814,14 @@ var genprotoNeuronCmd = &cobra.Command{
 	Short: pterm.Blue("Generates the protocol buffers files in go."),
 	Long: pterm.Green(
 		`This method uses the 'genproto-go' command line to generate protocol buffers 
-for the specified neuron.  Use this for local development of your gRPC services.  Once done, use
-the '--publish' flag to push the generated protocol buffers to the go.protobuf repository.`),
+for the specified neuron.  These are generated locally only and should be used for local development of your gRPC services.
+
+These are used in combination with the 'Replace ...' command in your go.mod file to 'point' to the local, instead of the
+official protobufs.'
+
+Once local development is done, use the '--push' flag to push the generated protocol buffers to the go.protobuf repository.
+Once the protobufs are pushed, you should remove the 'Replace... ' command in your go.mod file and run 'go mod tidy' to pull
+the latest protobufs from the repo into your gRPC service.`),
 	Example: pterm.LightYellow("alis neuron genproto {orgID}.{productID}.{neuronID}"),
 	Args:    validateNeuronArg,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -990,8 +996,8 @@ func init() {
 	buildNeuronCmd.Flags().BoolVarP(&setUpdateNeuronEnvFlag, "env", "e", false, pterm.Green("Set or update the ENV variables."))
 	buildNeuronCmd.Flags().BoolVarP(&setUpdateNeuronStateFlag, "state", "s", false, pterm.Green("Update the state of the neuron."))
 	//updateNeuronCmd.Flags().BoolVarP(&skipArtifactBuildFlag, "skip", "s", false, pterm.Green("Skip building new artifacts. Simply tag the "))
-	genprotoNeuronCmd.Flags().BoolVarP(&publishProtocolBuffersFlag, "publish", "p", false, pterm.Green("Generate the protocol buffers and publish them"))
-	genApiNeuronCmd.Flags().BoolVarP(&publishApiFlag, "publish", "p", false, pterm.Green("Generate the api libraries and publish them"))
+	genprotoNeuronCmd.Flags().BoolVarP(&publishProtocolBuffersFlag, "push", "p", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
+	genApiNeuronCmd.Flags().BoolVarP(&publishApiFlag, "push", "p", false, pterm.Green("Generate the api libraries and push them to the api repository"))
 }
 
 ////// genProtoPython generates protobuf files for python.
