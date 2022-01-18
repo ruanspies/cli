@@ -97,11 +97,6 @@ go install github.com/alis-x/cli/alis@latest
 ```
 echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
 ```
-   **NOTE**
-    
-   This command should be added to the 
-
-The above will install the `alis` binary in your `$GOPATH/bin` folder.
 
 ## Try it out
 
