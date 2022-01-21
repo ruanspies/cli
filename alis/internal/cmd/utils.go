@@ -640,9 +640,14 @@ func getNeuronDescriptor(neuron string) (*descriptorpb.FileDescriptorSet, error)
 	// which will be used when creating a new NeuronVersion resource.
 	neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 	cmds := "protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/") + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_source_info " + neuronProtoFullPath + "/*.proto"
-	_, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
-		return nil, err
+		if strings.Contains(fmt.Sprintf("%s", out), "No such file or directory") {
+			pterm.Warning.Print(fmt.Sprintf("%s\n", out))
+			return nil, nil
+		} else {
+			return nil, err
+		}
 	}
 
 	b, err := ioutil.ReadFile(neuronProtoFullPath + "/descriptor.pb")
