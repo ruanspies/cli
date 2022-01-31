@@ -24,15 +24,17 @@ The CLI requires the following to be set up in order to run.
 
 The CLI makes use of Google Cloud SDK authentication to seamlessly authenticate your requests to alis.exchange.  
 
-1. Run `gcloud auth login` from your terminal to authenticate your local environment with Google user account via a web-based authorization flow.
-2. Run `gcloud auth application-default login` to acquire new user credentials to use for Application Default Credentials ([ADC](https://developers.google.com/identity/protocols/application-default-credentials)). These are used in calling Google APIs.
+1. Install the latest version of Cloud SDK for your device by following the [instructions](https://cloud.google.com/sdk/docs/install).
+2. Run `gcloud auth login` from your terminal to authenticate your local environment with Google user account via a web-based authorization flow.
+    *NOTE* Ensure that you login using your account associated with alis.exchange.
+3. Run `gcloud auth application-default login` to acquire new user credentials to use for Application Default Credentials ([ADC](https://developers.google.com/identity/protocols/application-default-credentials)). These are used in calling Google APIs.
 
 
 ### Go
 
 Install any one of the **three latest major** [releases of Go](https://golang.org/doc/devel/release.html).  For installation instructions, see Go’s [Getting Started](https://golang.org/doc/install) guide.
 
-_Check_
+_Check Success_
 After installation, running `go version` should reflect one of the three latest major Go versions.
 
 ### Protocol Buffer compiler
@@ -49,6 +51,10 @@ After installation, running `go version` should reflect one of the three latest 
     2. Update your `PATH` so that the `protoc` compiler can find the plugins:
 
            export PATH="$PATH:$(go env GOPATH)/bin"
+           
+### Git
+
+Git may already be installed on your device. Check by running `git --version`. A successful response should look similar to `git version 2.30.0`. If the command was not found, follow the [installation instructions](https://www.atlassian.com/git/tutorials/install-git).
            
 ### Git Configuration variables
 
