@@ -29,6 +29,7 @@ func init() {
 	orgCmd.AddCommand(createOrgCmd)
 	orgCmd.AddCommand(getOrgCmd)
 	orgCmd.AddCommand(listOrgCmd)
+	orgCmd.AddCommand(clearOrgCmd)
 }
 
 // createOrgCmd represents the create command
@@ -91,7 +92,7 @@ you most likely will have to run the command: "alis org get google"`),
 		if organisationID == "google" {
 			// update google common protos.
 			spinner, _ := pterm.DefaultSpinner.Start("Updating " + homeDir + "/google/proto... ")
-			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/google/proto pull --no-rebase || git clone https://github.com/googleapis/api-common-protos.git $HOME/alis.exchange/google/proto").CombinedOutput()
+			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/google/proto pull --no-rebase || git clone https://github.com/googleapis/googleapis.git $HOME/alis.exchange/google/proto").CombinedOutput()
 			if err != nil {
 				pterm.Debug.Printf(fmt.Sprintf("%s", out))
 				pterm.Error.Println(err)
@@ -163,6 +164,55 @@ you most likely will have to run the command: "alis org get google"`),
 	},
 	Args:    validateOrgArg,
 	Example: pterm.LightYellow("alis org get {organisationID}"),
+}
+
+// clearOrgCmd represents the clear command
+var clearOrgCmd = &cobra.Command{
+	Use:   "clear",
+	Short: pterm.Blue("Clears the org from your local environment"),
+	Long: pterm.Green(
+		`This method removes the specified organisation from your local environment.
+
+This will remove all underlying products, protos, protobufs etc..
+
+Please clear organisations not actively working on - its not great to leave 
+these lying around in your local development environment.`),
+	Run: func(cmd *cobra.Command, args []string) {
+		organisationID = strings.Split(args[0], ".")[0]
+
+		// Retrieve the organisation resource
+		organisation, err := alisProductsClient.GetOrganisation(cmd.Context(),
+			&pbProducts.GetOrganisationRequest{Name: "organisations/" + organisationID})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+
+		orgPath := homeDir + "/alis.exchange/" + organisationID
+		pterm.Warning.Printf("Removing product '%s' from your local environment.\nFolder location: %s\n", organisationID, orgPath)
+		pterm.Warning.Printf("Please also ensure you close any IDEs (pointing to the \norganisation resources (protos, etc) or any underlying \nproducts) you may have open.\n")
+		userInput, err := askUserString("Are you sure? (y/n): ", `^[y|n]$`)
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
+		if userInput == "y" {
+			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "rm -rf "+orgPath).CombinedOutput()
+			if err != nil {
+				pterm.Error.Printf(fmt.Sprintf("%s", out))
+				return
+			}
+			pterm.Debug.Printf(fmt.Sprintf("%s", out))
+			pterm.Success.Printf("Removed product `%s` from your local environment.\nFolder removed: %s\n", organisationID, orgPath)
+		} else {
+			pterm.Warning.Printf("Aborted operation.\n Did not remove %s\n", orgPath)
+		}
+
+	},
+	Args:    validateOrgArg,
+	Example: pterm.LightYellow("alis org clear {orgID}"),
 }
 
 // listOrgCmd represents the list command
