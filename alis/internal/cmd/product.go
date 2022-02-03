@@ -325,7 +325,9 @@ under the 'alis.exchange' directory.`),
 
 		// Clone the product repository
 		spinner, _ := pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/products/" + productID + "... ")
-		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/"+organisationID+"/products/"+productID+" pull --no-rebase || gcloud source repos clone product."+productID+" $HOME/alis.exchange/"+organisationID+"/products/"+productID+" --project="+organisation.GetGoogleProjectId()).CombinedOutput()
+		cmds := "git -C $HOME/alis.exchange/" + organisationID + "/products/" + productID + " pull --no-rebase || gcloud source repos clone product." + productID + " $HOME/alis.exchange/" + organisationID + "/products/" + productID + " --project=" + organisation.GetGoogleProjectId()
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Error.Printf(fmt.Sprintf("%s", out))
 			return
@@ -382,7 +384,9 @@ around in your local development environment.`),
 		}
 
 		if userInput == "y" {
-			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "rm -rf "+productPath).CombinedOutput()
+			cmds := "rm -rf " + productPath
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 			if err != nil {
 				pterm.Error.Printf(fmt.Sprintf("%s", out))
 				return
@@ -855,6 +859,7 @@ var getkeyProductCmd = &cobra.Command{
 				"/key-" + productDeployment.GetGoogleProjectId() + ".json --iam-account=alis-exchange@" +
 				productDeployment.GetGoogleProjectId() + ".iam.gserviceaccount.com --project=" +
 				productDeployment.GetGoogleProjectId()
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 			if err != nil {
 				pterm.Debug.Println(cmds)
@@ -907,6 +912,7 @@ https://github.com/pseudomuto/protoc-gen-doc#installation`),
 		// Generate the index.html
 		cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
 			"protoc --plugin=protoc-gen-doc=$HOME/go/bin/protoc-gen-doc --doc_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " --doc_opt=html,docs.html -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Error.Printf(fmt.Sprintf("%s", out))
@@ -917,6 +923,7 @@ https://github.com/pseudomuto/protoc-gen-doc#installation`),
 		// Generate markdown
 		cmds = "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
 			"protoc --plugin=protoc-gen-doc=$HOME/go/bin/protoc-gen-doc --doc_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " --doc_opt=markdown,docs.md -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Error.Printf(fmt.Sprintf("%s", out))
@@ -926,6 +933,7 @@ https://github.com/pseudomuto/protoc-gen-doc#installation`),
 		// Generate json
 		cmds = "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
 			"protoc --plugin=protoc-gen-doc=$HOME/go/bin/protoc-gen-doc --doc_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " --doc_opt=json,docs.json -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Error.Printf(fmt.Sprintf("%s", out))

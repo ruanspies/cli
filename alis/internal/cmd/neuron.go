@@ -837,7 +837,7 @@ the latest protobufs from the repo into your gRPC service.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("Get Organisation:\n%s\n", organisation)
 
 		// Retrieve the neuron resource
 		neuron, err := alisProductsClient.GetNeuron(cmd.Context(),
@@ -848,16 +848,17 @@ the latest protobufs from the repo into your gRPC service.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neuron:\n%s\n", neuron)
+		pterm.Debug.Printf("Get Neuron:\n%s\n", neuron)
 
 		// Generate the protocol buffers.
 		neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 		neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 		cmds := "rm -rf " + neuronProtobufFullPath + " && " +
 			"mkdir -p " + neuronProtobufFullPath + " && " +
-			"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
+			"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
 			"protoc --go_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go_opt=paths=source_relative --go-grpc_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go-grpc_opt=paths=source_relative -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
 
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Error.Printf(fmt.Sprintf("%s", out))
@@ -866,8 +867,6 @@ the latest protobufs from the repo into your gRPC service.`),
 		}
 		if strings.Contains(fmt.Sprintf("%s", out), "warning") {
 			pterm.Warning.Print(fmt.Sprintf("Generating protocol buffers...\n%s", out))
-		} else {
-			pterm.Debug.Print(fmt.Sprintf("%s\n", out))
 		}
 		pterm.Success.Printf("Generated protocol buffers.\nProto source: %s\n", neuronProtoFullPath)
 
@@ -945,6 +944,7 @@ for the specified neuron`),
 			"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
 			"protoc --go_gapic_out=$HOME/alis.exchange/" + organisationID + "/api/go --go_gapic_opt='go-gapic-package=" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/") + ";" + strings.Split(neuronID, "-")[2] + "' -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
 
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Error.Printf(fmt.Sprintf("%s", out))

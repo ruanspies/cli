@@ -92,7 +92,9 @@ you most likely will have to run the command: "alis org get google"`),
 		if organisationID == "google" {
 			// update google common protos.
 			spinner, _ := pterm.DefaultSpinner.Start("Updating " + homeDir + "/google/proto... ")
-			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/google/proto pull --no-rebase || git clone https://github.com/googleapis/googleapis.git $HOME/alis.exchange/google/proto").CombinedOutput()
+			cmds := "git -C $HOME/alis.exchange/google/proto pull --no-rebase || git clone https://github.com/googleapis/googleapis.git $HOME/alis.exchange/google/proto"
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 			if err != nil {
 				pterm.Debug.Printf(fmt.Sprintf("%s", out))
 				pterm.Error.Println(err)
@@ -113,7 +115,9 @@ you most likely will have to run the command: "alis org get google"`),
 
 		// Clone the proto repository
 		spinner, _ := pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/proto... ")
-		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/"+organisationID+"/proto pull --no-rebase || gcloud source repos clone proto $HOME/alis.exchange/"+organisationID+"/proto --project="+res.GetGoogleProjectId()).CombinedOutput()
+		cmds := "git -C $HOME/alis.exchange/" + organisationID + "/proto pull --no-rebase || gcloud source repos clone proto $HOME/alis.exchange/" + organisationID + "/proto --project=" + res.GetGoogleProjectId()
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Printf(fmt.Sprintf("%s", out))
 			pterm.Error.Println(err)
@@ -125,7 +129,9 @@ you most likely will have to run the command: "alis org get google"`),
 
 		// Clone the protobuf-go repository
 		spinner, _ = pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/protobuf/go... ")
-		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/"+organisationID+"/protobuf/go pull --no-rebase || gcloud source repos clone protobuf-go $HOME/alis.exchange/"+organisationID+"/protobuf/go --project="+res.GetGoogleProjectId()).CombinedOutput()
+		cmds = "git -C $HOME/alis.exchange/" + organisationID + "/protobuf/go pull --no-rebase || gcloud source repos clone protobuf-go $HOME/alis.exchange/" + organisationID + "/protobuf/go --project=" + res.GetGoogleProjectId()
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Printf(fmt.Sprintf("%s", out))
 			pterm.Error.Println(err)
@@ -137,7 +143,9 @@ you most likely will have to run the command: "alis org get google"`),
 
 		// Clone the api-go repository
 		spinner, _ = pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/api/go... ")
-		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/"+organisationID+"/api/go pull --no-rebase || gcloud source repos clone api-go $HOME/alis.exchange/"+organisationID+"/api/go --project="+res.GetGoogleProjectId()).CombinedOutput()
+		cmds = "git -C $HOME/alis.exchange/" + organisationID + "/api/go pull --no-rebase || gcloud source repos clone api-go $HOME/alis.exchange/" + organisationID + "/api/go --project=" + res.GetGoogleProjectId()
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Printf(fmt.Sprintf("%s", out))
 			pterm.Error.Println(err)
@@ -149,7 +157,9 @@ you most likely will have to run the command: "alis org get google"`),
 
 		// Clone the protobuf-python repository
 		spinner, _ = pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/protobuf/python... ")
-		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", "git -C $HOME/alis.exchange/"+organisationID+"/protobuf/python pull --no-rebase || gcloud source repos clone protobuf-python $HOME/alis.exchange/"+organisationID+"/protobuf/python --project="+res.GetGoogleProjectId()).CombinedOutput()
+		cmds = "git -C $HOME/alis.exchange/" + organisationID + "/protobuf/python pull --no-rebase || gcloud source repos clone protobuf-python $HOME/alis.exchange/" + organisationID + "/protobuf/python --project=" + res.GetGoogleProjectId()
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Printf(fmt.Sprintf("%s", out))
 			pterm.Error.Println(err)
@@ -199,7 +209,9 @@ these lying around in your local development environment.`),
 		}
 
 		if userInput == "y" {
-			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", "rm -rf "+orgPath).CombinedOutput()
+			cmds := "rm -rf " + orgPath
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 			if err != nil {
 				pterm.Error.Printf(fmt.Sprintf("%s", out))
 				return

@@ -16,6 +16,7 @@ var updateCmd = &cobra.Command{
 		pterm.Info.Printf("Current version: %s\n", VERSION)
 		spinner, _ := pterm.DefaultSpinner.Start("Updating alis_ command line interface...")
 		cmds := "go env -w GOPRIVATE=go.protobuf.alis.alis.exchange,github.com/alis-x/cli/alis,go.lib.alis.dev && go install github.com/alis-x/cli/alis@latest"
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Println(cmds)

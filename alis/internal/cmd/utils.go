@@ -31,7 +31,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 	// Pull the latest changes to local environment
 	spinner, _ := pterm.DefaultSpinner.Start("Updating repositories updates for " + repoPath)
 	cmds := "git -C " + repoPath + " pull --no-rebase"
-	pterm.Debug.Printf("shell command:\n%s\n", cmds)
+	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	out, err := exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
 		pterm.Debug.Println(fmt.Sprintf("%s", out))
@@ -45,7 +45,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 			cmds = cmds + " && git -C " + repoPath + " add -- " + commitPath
 		}
 		cmds = cmds + " && git -C " + repoPath + " commit -m '" + message + "' -- " + commitPath
-		pterm.Debug.Printf("shell command:\n%s\n", cmds)
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err := exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Println(fmt.Sprintf("%s", out))
@@ -60,7 +60,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 	} else {
 		cmds = "git -C " + repoPath + " push origin refs/heads/master:master"
 	}
-	pterm.Debug.Printf("shell command:\n%s\n", cmds)
+	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	out, err = exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
 	if strings.Contains(fmt.Sprintf("%s", out), "already exists") {
 		spinner.Warning(fmt.Sprintf("%s", out))
@@ -75,7 +75,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 	// Return the hash of the commit if a tag was provided.
 	if tag != "" {
 		cmds = "git -C " + repoPath + " rev-parse " + tag
-		pterm.Debug.Printf("shell command:\n%s\n", cmds)
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err = exec.CommandContext(ctx, "bash", "-c", cmds).Output()
 		if err != nil {
 			pterm.Debug.Println(fmt.Sprintf("%s", out))
@@ -640,6 +640,7 @@ func getNeuronDescriptor(neuron string) (*descriptorpb.FileDescriptorSet, error)
 	// which will be used when creating a new NeuronVersion resource.
 	neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 	cmds := "protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/") + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_source_info " + neuronProtoFullPath + "/*.proto"
+	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
 		if strings.Contains(fmt.Sprintf("%s", out), "No such file or directory") {
@@ -690,6 +691,7 @@ func genProductDescriptorFile(product string) error {
 	// The descriptor.pb at product level represents all the underlying neurons.
 	cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
 		"protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_imports --include_source_info $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	_, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
 		return err
