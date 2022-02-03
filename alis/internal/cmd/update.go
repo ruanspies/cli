@@ -37,7 +37,7 @@ var updateCmd = &cobra.Command{
 		// get new version, if updated.
 		v := regexp.MustCompile(`(?m)alis version (\d+.\d+.\d+)`).FindAllStringSubmatch(fmt.Sprintf("%s", out), -1)
 		if v[0][1] == VERSION {
-			spinner.Success("Already have the latest version installed")
+			spinner.Success("You already have the latest version installed.")
 		} else {
 			spinner.Success(fmt.Sprintf("Updated version: %s -> %s\n", VERSION, v[0][1]))
 		}
