@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 	"github.com/pterm/pterm"
-	"os/exec"
-
 	"github.com/spf13/cobra"
+	"os/exec"
+	"regexp"
 )
 
 // updateCmd represents the update command
@@ -24,6 +24,19 @@ var updateCmd = &cobra.Command{
 			return
 		}
 		spinner.Success("Updated alis_ CLI to the latest version.")
+
+		// check latest version
+		cmds = "alis --version"
+		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
+		if err != nil {
+			pterm.Debug.Println(cmds)
+			spinner.Fail(fmt.Sprintf("%s", out))
+			return
+		}
+
+		v := regexp.MustCompile(`(?m)alis version (\d+.\d+.\d+)`).FindAllStringSubmatch(fmt.Sprintf("%s", out), -1)
+		pterm.Info.Printf("Installed version: %s\n", v[0][1])
 	},
 }
 
