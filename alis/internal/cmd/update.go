@@ -23,7 +23,6 @@ var updateCmd = &cobra.Command{
 			spinner.Fail(fmt.Sprintf("%s", out))
 			return
 		}
-		spinner.Success("Updated alis_ CLI to the latest version.")
 
 		// check latest version
 		cmds = "alis --version"
@@ -35,8 +34,14 @@ var updateCmd = &cobra.Command{
 			return
 		}
 
+		// get new version, if updated.
 		v := regexp.MustCompile(`(?m)alis version (\d+.\d+.\d+)`).FindAllStringSubmatch(fmt.Sprintf("%s", out), -1)
-		pterm.Info.Printf("Installed version: %s\n", v[0][1])
+		if v[0][1] == VERSION {
+			spinner.Success("Already have the latest version installed")
+		} else {
+			spinner.Success(fmt.Sprintf("Updated to version: %s\n", v[0][1]))
+		}
+
 	},
 }
 
