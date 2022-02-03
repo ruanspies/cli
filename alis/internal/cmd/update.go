@@ -39,9 +39,8 @@ var updateCmd = &cobra.Command{
 		if v[0][1] == VERSION {
 			spinner.Success("Already have the latest version installed")
 		} else {
-			spinner.Success(fmt.Sprintf("Updated to version: %s\n", v[0][1]))
+			spinner.Success(fmt.Sprintf("Updated version: %s -> %s\n", VERSION, v[0][1]))
 		}
-
 	},
 }
 
