@@ -213,7 +213,7 @@ var getNeuronCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -222,7 +222,7 @@ var getNeuronCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Retrieve the neuron resource
 		neuron, err := alisProductsClient.GetNeuron(cmd.Context(),
@@ -232,14 +232,14 @@ var getNeuronCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neuron:\n%s\n", neuron)
+		pterm.Debug.Printf("GetNeuron:\n%s\n", neuron)
 
 		// Retrieve Product deployments
 		productsDeploymentsRes, err := alisProductsClient.ListProductDeployments(cmd.Context(), &pbProducts.ListProductDeploymentsRequest{
 			Parent: product.GetName(),
 		})
 		productDeployments := productsDeploymentsRes.GetProductDeployments()
-		pterm.Debug.Printf("Deployments:\n%v found\n", len(productsDeploymentsRes.GetProductDeployments()))
+		pterm.Debug.Printf("ListProductDeployments:\n%v found\n", len(productsDeploymentsRes.GetProductDeployments()))
 
 		// Retrieve the latest neuronVersion
 		listNeuronVersionsRes, err := alisProductsClient.ListNeuronVersions(cmd.Context(), &pbProducts.ListNeuronVersionsRequest{
@@ -263,7 +263,7 @@ var getNeuronCmd = &cobra.Command{
 		case pbProducts.NeuronVersion_FAILED:
 			state = pterm.Red(state)
 		}
-		header := []string{"Resource ID", "Version", "Update Time", "State", "Resource Name"}
+		header := []string{"Resource ID", "Latest Version", "Update Time", "State", "Resource Name"}
 		row := []string{
 			neuronID, neuronVersion.GetVersion(),
 			neuron.GetUpdateTime().AsTime().Format(time.RFC3339), state, neuron.GetName()}
@@ -286,9 +286,32 @@ var getNeuronCmd = &cobra.Command{
 			return
 		}
 
+		// Last 7 versions
+		pterm.DefaultSection.Print("NEURON_VERSIONS (last 7):")
+		header = []string{"Index", "Version", "State", "Update Time", "# of Dockerfiles", "Repo Commit Sha", "Proto Commit Sha"}
+		neuronVersionTable := pterm.TableData{header}
+		for i, neuronVersion := range neuronVersions {
+			if i > 7 {
+				continue
+			}
+			neuronVersionTable = append(neuronVersionTable, []string{
+				fmt.Sprintf("%v", i),
+				neuronVersion.GetVersion(),
+				neuronVersion.GetState().String(),
+				neuronVersion.GetUpdateTime().AsTime().Format(time.RFC3339),
+				fmt.Sprintf("%v", len(neuronVersion.GetDockerfilePaths())),
+				neuronVersion.GetCommitSha(),
+				neuronVersion.GetProtoCommitSha(),
+			})
+		}
+		err = pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(neuronVersionTable).Render()
+		if err != nil {
+			return
+		}
+
 		// Generate table with Deployment details.
 		pterm.DefaultSection.Print("DEPLOYMENTS:")
-		header = []string{"Index", "Name", "Version", "Google Project", "State", "Update Time"}
+		header = []string{"Index", "Name", "Neuron Version", "Google Project", "State", "Update Time"}
 		deploymentTable := pterm.TableData{header}
 
 		// Add deployments
@@ -334,10 +357,11 @@ var getNeuronCmd = &cobra.Command{
 			return
 		}
 
+		// build header for Envs table.
 		header = []string{"Env"}
 		for i, neuronDeployment := range batchGetNeuronDeploymentsRes.GetNeuronDeployments() {
 			if neuronDeployment.GetName() != "" {
-				header = append(header, productDeployments[i].GetGoogleProjectId())
+				header = append(header, fmt.Sprintf("%v: %s", i, productDeployments[i].GetGoogleProjectId()))
 			}
 		}
 		table = pterm.TableData{header}
