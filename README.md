@@ -70,7 +70,7 @@ _Check_
 
 Check if this was successful by running `git config --get credential.https://source.developers.google.com.helper`. The response should be `gcloud.sh`. If the response is blank then the configuration was not successful.
 
-#### Windoes
+#### Windows
 
    ```
    git config --global credential.https://source.developers.google.com.helper gcloud.cmd
