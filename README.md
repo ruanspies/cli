@@ -1,14 +1,12 @@
 # The alis.exchange Command Line Interface
 
-The `alis` command-line interface (CLI) is the primary tool to create and manage resources on **alis.exchange**.  You can use this tool to perform many common platform tasks either from the command line or in scripts and other automations.
+The `alis` command-line interface (CLI) is the primary tool to create and manage resources on **alis.exchange**.  You can use this tool to perform many common platform tasks either from the command line or in scripts and other automations. Some example use cases for the CLI:
 
-For example, you can use the `alis` CLI to:
-
-* list organisations and/or products
-* clone a product to your local environment 
-* create a new product / organisation
-* deploy new versions of your product
-* manage the build and deploy steps of your services
+* List organisations and/or products;
+* Clone a product to your local environment;
+* Create a new product / organisation;
+* Deploy new versions of your product; and
+* Manage the build and deploy steps of your services.
 
 ## Table of Contents
 
