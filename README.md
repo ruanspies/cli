@@ -55,6 +55,31 @@ After installation, running `go version` should reflect one of the three latest 
 ### Git
 
 Git may already be installed on your device. Check by running `git --version`. A successful response should look similar to `git version 2.30.0`. If the command was not found, follow the [installation instructions](https://www.atlassian.com/git/tutorials/install-git).
+
+### Connect Git with Google Cloud
+
+Your Git needs to be configured with Google Cloud Source repositories. Credential helper scripts provide the information that Git needs to connect securely to Cloud Source Repositories using your Google Account credentials. You don't need to perform any additional configuration steps (for example, uploading ssh keys) to establish this secure connection.
+
+#### macOS or Linux
+
+   ```
+   git config --global credential.'https://source.developers.google.com'.helper gcloud.sh
+   ```
+
+_Check_
+
+Check if this was successful by running `git config --get credential.https://source.developers.google.com.helper`. The response should be `gcloud.sh`. If the response is blank then the configuration was not successful.
+
+#### Windoes
+
+   ```
+   git config --global credential.https://source.developers.google.com.helper gcloud.cmd
+   ```
+   
+_Check_
+
+Check if this was successful by running `git config --get credential.https://source.developers.google.com.helper`. The response should be `gcloud.cmd`. If the response is blank then the configuration was not successful.
+
            
 ### Git Configuration variables
 
@@ -118,10 +143,4 @@ alis org get foo
 
 # list available products
 alis product list foo
-
-# Setup a particular product, say 'ab' in your local environment
-alis product get foo.ab
-
-# In order to run methods in your local environment, you need to generate a key file
-alis product getkey foo.ab
 ```
