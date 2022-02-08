@@ -2,7 +2,7 @@
 resource "google_project" "product_deployment" {
   name = var.ALIS_OS_PROJECT
   project_id = var.ALIS_OS_PROJECT
-  folder_id = data.terraform_remote_state.product.outputs.folder
+  folder_id = (length(regexall("^[a-z0-4]+-[a-z]{2}-(prod)-[a-z0-9]+$", var.ALIS_OS_PROJECT)) > 0 ? data.terraform_remote_state.product.outputs.folder_prod : data.terraform_remote_state.product.outputs.folder_dev)
   labels = {
     "managed-by-alis" : true
   }
