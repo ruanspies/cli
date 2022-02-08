@@ -58,28 +58,14 @@ Git may already be installed on your device. Check by running `git --version`. A
 
 ### Connect Git with Google Cloud
 
-Your Git needs to be configured with Google Cloud Source repositories. Credential helper scripts provide the information that Git needs to connect securely to Cloud Source Repositories using your Google Account credentials. You don't need to perform any additional configuration steps (for example, uploading ssh keys) to establish this secure connection.
+Your Git needs to be configured with Google Cloud Source repositories. Credential helper scripts provide the information that Git needs to connect securely to Cloud Source Repositories using your Google Account credentials.
 
-#### macOS or Linux
-
-   ```
-   git config --global credential.'https://source.developers.google.com'.helper gcloud.sh
-   ```
+1. Access [this link](https://source.developers.google.com/auth/start?scopes=https://www.googleapis.com/auth/cloud-platform&state=) and log in with your Google credentials
+2. Copy the relevant script into your terminal
 
 _Check_
 
-Check if this was successful by running `git config --get credential.https://source.developers.google.com.helper`. The response should be `gcloud.sh`. If the response is blank then the configuration was not successful.
-
-#### Windows
-
-   ```
-   git config --global credential.https://source.developers.google.com.helper gcloud.cmd
-   ```
-   
-_Check_
-
-Check if this was successful by running `git config --get credential.https://source.developers.google.com.helper`. The response should be `gcloud.cmd`. If the response is blank then the configuration was not successful.
-
+Check if this was successful by opening the `.gitcookies` file in Vim: `vim ~/.gitcookies`. If successful, the file should contain a `source.developers.google.com` entry.
            
 ### Git Configuration variables
 
