@@ -70,7 +70,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 		spinner.Fail(fmt.Sprintf("%s", out))
 		return "", err
 	}
-	spinner.Success("Pushed repository: " + repoPath + "\nTag: " + tag)
+	spinner.Success("Pushed repository " + pterm.LightGreen(repoPath) + " with tag " + pterm.LightGreen(tag))
 
 	// Return the hash of the commit if a tag was provided.
 	if tag != "" {
@@ -83,6 +83,11 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 		pterm.Debug.Printf(string(out))
 
 		sha := strings.Replace(string(out), "\n", "", -1)
+		// sha should not be empty
+		if sha == "" {
+			return "", fmt.Errorf("the following command did not return a valid sha:\n%s\nplease run the following command to update the repo and try again:\n%s", cmds, "git -C "+repoPath+" pull --no-rebase")
+		}
+
 		return sha, nil
 	} else {
 		return "", nil

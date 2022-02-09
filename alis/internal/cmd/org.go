@@ -169,7 +169,7 @@ you most likely will have to run the command: "alis org get google"`),
 
 		spinner.Success("Updated repository " + homeDir + "/alis.exchange/" + organisationID + "/protobuf/python. ")
 
-		pterm.Debug.Printf("Retrieved Organisation:\n%s\n", res)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", res)
 		ptermTip.Println("Are you making use of Google protocol buffers?\nRun `alis org get google` to download a local copy\nof of their common protocol buffers as well.")
 	},
 	Args:    validateOrgArg,
@@ -197,7 +197,7 @@ these lying around in your local development environment.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		orgPath := homeDir + "/alis.exchange/" + organisationID
 		pterm.Warning.Printf("Removing product '%s' from your local environment.\nFolder location: %s\n", organisationID, orgPath)
@@ -242,7 +242,7 @@ var listOrgCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisations.GetOrganisations())
+		pterm.Debug.Printf("ListOrganisations:\n%s\n", organisations.GetOrganisations())
 
 		table := pterm.TableData{{"Index", "OrganisationID", "Display Name", "Owner", "Google Project", "Resource Name", "State", "Updated"}}
 		for i, organisation := range organisations.GetOrganisations() {

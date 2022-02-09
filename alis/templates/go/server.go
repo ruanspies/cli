@@ -3,14 +3,12 @@ package main
 import (
 	"cloud.google.com/go/bigquery"
 	"cloud.google.com/go/firestore"
+	"google.golang.org/grpc"
 
 	"context"
 	"log"
 	"net"
 	"os"
-
-	alis "go.lib.alis.dev"
-	"google.golang.org/grpc"
 
 	pb "go.protobuf.{{.Organisation}}.alis.exchange/{{.Organisation}}/{{.Product}}/{{.Contract}}/{{.Neuron}}/{{.VersionMajor}}"
 )
@@ -18,7 +16,7 @@ import (
 // client is a global client, initialized once per cloud run instance.
 var (
 	firestoreClient *firestore.Client
-	bigqueryClient *bigquery.Client
+	bigqueryClient  *bigquery.Client
 )
 
 func init() {
@@ -41,7 +39,7 @@ func init() {
 	// Initialise Bigquery client
 	bigqueryClient, err = bigquery.NewClient(context.Background(), projectID)
 	if err != nil {
-		log.Fatalf( "bigquery.NewClient: %v", err)
+		log.Fatalf("bigquery.NewClient: %v", err)
 	}
 
 	// Initialise Firestore client

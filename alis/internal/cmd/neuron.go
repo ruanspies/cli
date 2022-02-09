@@ -71,7 +71,7 @@ the changes to the master branch and run the command "alis neuron build ..." `),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -81,7 +81,7 @@ the changes to the master branch and run the command "alis neuron build ..." `),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Check if neuron exists
 		_, err = alisProductsClient.GetNeuron(cmd.Context(), &pbProducts.GetNeuronRequest{
@@ -128,7 +128,7 @@ the changes to the master branch and run the command "alis neuron build ..." `),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neuron:\n%s\n", neuron)
+		pterm.Debug.Printf("GetNeuron:\n%s\n", neuron)
 
 		// push boiler plate code to local environment
 		// Parse the template files.
@@ -256,14 +256,14 @@ var getNeuronCmd = &cobra.Command{
 		}
 
 		// Generate table with Neuron details.
-		pterm.DefaultSection.Print("NEURON:")
+		pterm.DefaultSection.Print("NEURON BUILD:")
 		// Color the state
 		state := neuronVersion.GetState().String()
 		switch neuronVersion.GetState() {
 		case pbProducts.NeuronVersion_FAILED:
 			state = pterm.Red(state)
 		}
-		header := []string{"Resource ID", "Latest Version", "Update Time", "State", "Resource Name"}
+		header := []string{"Resource ID", "Latest Build Version", "Update Time", "State", "Resource Name"}
 		row := []string{
 			neuronID, neuronVersion.GetVersion(),
 			neuron.GetUpdateTime().AsTime().Format(time.RFC3339), state, neuron.GetName()}
@@ -286,9 +286,9 @@ var getNeuronCmd = &cobra.Command{
 			return
 		}
 
-		// Last 7 versions
-		pterm.DefaultSection.Print("NEURON_VERSIONS (last 7):")
-		header = []string{"Index", "Version", "State", "Update Time", "# of Dockerfiles", "Repo Commit Sha", "Proto Commit Sha"}
+		// Display table of the last 7 neuron_versions
+		pterm.DefaultSection.Print("NEURON BUILD HISTORY (last 7):")
+		header = []string{"Index", "Version", "State", "Update Time", "Repositories"}
 		neuronVersionTable := pterm.TableData{header}
 		for i, neuronVersion := range neuronVersions {
 			if i > 7 {
@@ -299,9 +299,14 @@ var getNeuronCmd = &cobra.Command{
 				neuronVersion.GetVersion(),
 				neuronVersion.GetState().String(),
 				neuronVersion.GetUpdateTime().AsTime().Format(time.RFC3339),
-				fmt.Sprintf("%v", len(neuronVersion.GetDockerfilePaths())),
-				neuronVersion.GetCommitSha(),
-				neuronVersion.GetProtoCommitSha(),
+				pterm.Gray(fmt.Sprintf("product: https://source.cloud.google.com/%s/product.%s/+/%s", organisation.GetGoogleProjectId(), productID, neuronVersion.GetCommitSha())),
+			})
+			neuronVersionTable = append(neuronVersionTable, []string{
+				"",
+				"",
+				"",
+				"",
+				pterm.Gray(fmt.Sprintf("proto:   https://source.cloud.google.com/%s/proto/+/%s", organisation.GetGoogleProjectId(), neuronVersion.GetProtoCommitSha())),
 			})
 		}
 		err = pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(neuronVersionTable).Render()
@@ -310,7 +315,7 @@ var getNeuronCmd = &cobra.Command{
 		}
 
 		// Generate table with Deployment details.
-		pterm.DefaultSection.Print("DEPLOYMENTS:")
+		pterm.DefaultSection.Print("NEURON DEPLOYMENTS:")
 		header = []string{"Index", "Name", "Neuron Version", "Google Project", "State", "Update Time"}
 		deploymentTable := pterm.TableData{header}
 
@@ -404,7 +409,7 @@ var listNeuronCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -413,7 +418,7 @@ var listNeuronCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Retrieve the neuron resource
 		listNeuronsRes, err := alisProductsClient.ListNeurons(cmd.Context(),
@@ -422,13 +427,13 @@ var listNeuronCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neurons:\n%v found\n", len(listNeuronsRes.GetNeurons()))
+		pterm.Debug.Printf("ListNeurons:\n%v found\n", len(listNeuronsRes.GetNeurons()))
 
 		productsDeploymentsRes, err := alisProductsClient.ListProductDeployments(cmd.Context(), &pbProducts.ListProductDeploymentsRequest{
 			Parent: product.GetName(),
 		})
 		productDeployments := productsDeploymentsRes.GetProductDeployments()
-		pterm.Debug.Printf("Deployments:\n%v found\n", len(productsDeploymentsRes.GetProductDeployments()))
+		pterm.Debug.Printf("GetProductDeployments:\n%v found\n", len(productsDeploymentsRes.GetProductDeployments()))
 
 		pterm.DefaultSection.Printf("Neurons for %s (%s):", product.GetDisplayName(), product.GetGoogleProjectId())
 
@@ -522,7 +527,7 @@ This registry then becomes the source for neuron deployments.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -531,7 +536,7 @@ This registry then becomes the source for neuron deployments.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Retrieve the neuron resource
 		neuron, err := alisProductsClient.GetNeuron(cmd.Context(),
@@ -541,7 +546,7 @@ This registry then becomes the source for neuron deployments.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neuron:\n%s\n", neuron)
+		pterm.Debug.Printf("GetNeuron:\n%s\n", neuron)
 
 		// generate a FileDescriptorSet from the current protos.
 		// TODO: move this potentially to Build Triggers.
@@ -658,7 +663,7 @@ This registry then becomes the source for neuron deployments.`),
 
 		// check if we need to wait for operation to complete.
 		if asyncFlag {
-			pterm.Debug.Printf("Operation:\n%s\n", op)
+			pterm.Debug.Printf("GetOperation:\n%s\n", op)
 			pterm.Success.Printf("Launched Update in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
 		} else {
 			// wait for the long-running operation to complete.
@@ -693,7 +698,7 @@ deploys it to one or more environments`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -702,7 +707,7 @@ deploys it to one or more environments`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Retrieve the neuron resource
 		neuron, err := alisProductsClient.GetNeuron(cmd.Context(),
@@ -712,7 +717,7 @@ deploys it to one or more environments`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neuron:\n%s\n", neuron)
+		pterm.Debug.Printf("GetNeuron:\n%s\n", neuron)
 
 		// ask the user to select a product deployment
 		productDeployments, err := selectProductDeployments(cmd.Context(), product.GetName())
@@ -811,7 +816,7 @@ deploys it to one or more environments`),
 
 			// check if we need to wait for operation to complete.
 			if asyncFlag {
-				pterm.Debug.Printf("Operation:\n%s\n", op)
+				pterm.Debug.Printf("GetOperation:\n%s\n", op)
 				pterm.Success.Printf("Launched service in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
 			} else {
 				// wait for the long-running operation to complete.
@@ -947,7 +952,7 @@ for the specified neuron`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the neuron resource
 		neuron, err := alisProductsClient.GetNeuron(cmd.Context(),
@@ -958,7 +963,7 @@ for the specified neuron`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Neuron:\n%s\n", neuron)
+		pterm.Debug.Printf("GetNeuron:\n%s\n", neuron)
 
 		// Generate the api client libraries buffers.
 		neuronAPIFullPath := homeDir + "/alis.exchange/" + organisationID + "/api/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")

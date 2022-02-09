@@ -35,132 +35,6 @@ var productCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pterm.Error.Println("a valid command is missing\nplease run 'alis product -h' for details.")
 	},
-	//Run: func(cmd *cobra.Command, args []string) {
-	//	productID := args[0]
-	//	organisation := strings.Split(productID, ".")[0]
-	//	product := strings.Split(productID, ".")[1]
-	//
-	//	// Synchronises the product repository to local environment
-	//	if clearProductFlag {
-	//
-	//		// no need to delete anything if there is nothing
-	//		_, err := os.Stat(homeDir+"/"+organisation+"/"+product)
-	//		if err != nil {
-	//			pterm.Warning.Printf("No directory (%s) to delete.\nCancelled clear command.", homeDir+"/"+organisation+"/"+product)
-	//			return
-	//		}
-	//
-	//		pterm.Warning.Printf("Are you sure you would like to delete %s (y/n)? ", homeDir + "/" + organisation + "/" + product )
-	//		reader := bufio.NewReader(os.Stdin)
-	//		char, _, err := reader.ReadRune()
-	//		if err != nil {
-	//			pterm.Error.Println(err)
-	//		}
-	//		switch char {
-	//		case 'y':
-	//			cmds := "rm -rf $HOME/" + organisation + "/" + product
-	//			out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
-	//			if err != nil {
-	//				pterm.Debug.Println(cmds)
-	//				pterm.Error.Printf("%s", out)
-	//				return
-	//			}
-	//			pterm.Success.Printf("Deleted %s", homeDir + "/" + organisation + "/" + product)
-	//			break
-	//		default:
-	//			pterm.Info.Println("Cancelled clear command.")
-	//		}
-	//	}
-	//
-	//	// Synchronises the product repository to local environment
-	//	if getProductFlag {
-	//
-	//		// aborts if directory already exists.
-	//		_, err := os.Stat(homeDir+"/"+organisation+"/"+product)
-	//		if err == nil {
-	//			pterm.Error.Printf("Directory exists (%s)\nPlease remove / move the directory before you create a local copy product\nThe `--get` tag is a one way sync from the cloud to your local environment.", homeDir+"/"+organisation+"/"+product)
-	//			return
-	//		}
-	//
-	//		// creates directory if one does not exists
-	//		err = os.MkdirAll(homeDir+"/"+organisation+"/"+product, os.FileMode(0777))
-	//		if err != nil {
-	//			pterm.Error.Println(err)
-	//			return
-	//		}
-	//		// Update the product repository, or retrieve if not already available.
-	//		spinner, _ := pterm.DefaultSpinner.Start("Synchronising " + homeDir + "/" + organisation + "/" + product + "...")
-	//		cmds := "git -C $HOME/" + organisation + "/" + product + " pull --no-rebase || gcloud source repos clone " + product + " $HOME/" + organisation + "/" + product + " --project=" + organisation + "-" + product
-	//		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
-	//		if err != nil {
-	//			pterm.Debug.Println(cmds)
-	//			pterm.Error.Printf("%s", out)
-	//			return
-	//		}
-	//		spinner.Success("Synchronised " + homeDir + "/" + organisation + "/" + product + ".")
-	//	}
-	//
-	//	// Retrieve a product key
-	//	if getProductKeyFlag {
-	//		spinner, _ := pterm.DefaultSpinner.Start("Retrieving product service account key to " + homeDir + "/" + organisation + "." + product + "... ")
-	//
-	//		// retrieve the current deployed version from the resource in the development deployment.
-	//		deployment, err := alisDeploymentResourcesClient.GetDeployment(cmd.Context(), &pbProducts.GetDeploymentRequest{
-	//			Name: "organisations/" + organisation + "/products/" + product + "/deployments/" + organisation + "-" + product + "-dev",
-	//		})
-	//		if err != nil {
-	//			spinner.Fail(err)
-	//			return
-	//		}
-	//
-	//		cmds := "gcloud iam service-accounts keys create $HOME/" + organisation + "/" + product + "/key.json --iam-account=alis-sa@" + deployment.GetGoogleProjectId() + ".iam.gserviceaccount.com --project=" + organisation + "-" + product + "-dev"
-	//		out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
-	//		if err != nil {
-	//			pterm.Debug.Println(cmds)
-	//			spinner.Fail(out)
-	//			return
-	//		}
-	//		spinner.Success("Downloaded product service account key to " + homeDir + "/" + organisation + "." + product + ". ")
-	//	}
-	//
-	//	// Deploy product to development environment
-	//	if buildProductFlag {
-	//		pterm.Info.Printf("Building product: %s...\n", productID)
-	//		err := buildProduct(cmd.Context(), productID)
-	//		if err != nil {
-	//			pterm.Error.Println(err)
-	//			return
-	//		}
-	//	}
-	//
-	//	// Deploy product
-	//	if deployProductFlag {
-	//		pterm.Info.Printf("Deploying product: %s...\n", productID)
-	//		err := deployProduct(cmd.Context(), productID)
-	//		if err != nil {
-	//			pterm.Error.Println(err)
-	//			return
-	//		}
-	//	}
-	//},
-	//Args: func(cmd *cobra.Command, args []string) error {
-	//	if len(args) < 1 {
-	//		return fmt.Errorf("requires an product ID in the format: {organisation}.{product}")
-	//	}
-	//	validProductId := regexp.MustCompile(`(?m)^[a-z]+.[a-z]{2}$`).MatchString(args[0])
-	//	if !validProductId {
-	//		pterm.Error.Println("invalid argument (" + args[0] + ") format, needs to be in the format: {organisation}.{product}")
-	//		return fmt.Errorf("")
-	//	}
-	//
-	//	// at least one flag needs to be selected.
-	//	if !(initProductFlag || getProductFlag || clearProductFlag || getProductKeyFlag || deployProductFlag || buildProductFlag) {
-	//		pterm.Error.Println("at least one of the flags needs to be provided.")
-	//		return fmt.Errorf("")
-	//	}
-	//	return nil
-	//},
-	//Example: pterm.LightYellow("alis product alis.in -sk"),
 }
 
 // createProductCmd represents the create command
@@ -180,7 +54,7 @@ var createProductCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// ensure that the product does not yet exist
 		// we perform the check here before asking the user a range of questions - i.e. fail fast ;)
@@ -277,7 +151,7 @@ var createProductCmd = &cobra.Command{
 
 		// check if we need to wait for operation to complete.
 		if asyncFlag {
-			pterm.Debug.Printf("Operation:\n%s\n", op)
+			pterm.Debug.Printf("GetOperation:\n%s\n", op)
 			pterm.Success.Printf("Launched Update in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
 		} else {
 			// wait for the long-running operation to complete.
@@ -312,7 +186,7 @@ under the 'alis.exchange' directory.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -321,7 +195,7 @@ under the 'alis.exchange' directory.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Clone the product repository
 		spinner, _ := pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/products/" + productID + "... ")
@@ -363,7 +237,7 @@ around in your local development environment.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -373,7 +247,7 @@ around in your local development environment.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		productPath := homeDir + "/alis.exchange/" + organisationID + "/products/" + productID
 		pterm.Warning.Printf("Removing product '%s.%s' from your local environment.\nFolder location: %s\nPlease also ensure you close this product in any IDEs you may have open.\n", organisationID, productID, productPath)
@@ -420,7 +294,7 @@ var listProductCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		products, err := alisProductsClient.ListProducts(cmd.Context(),
@@ -467,7 +341,7 @@ var treeProductCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		tree := pterm.LeveledList{}
 		tree = append(tree, pterm.LeveledListItem{Level: 0, Text: "Products:"})
@@ -618,7 +492,7 @@ specification as determined by alis.exchange.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -628,7 +502,7 @@ specification as determined by alis.exchange.`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// TODO: handle the scenario where user provides a specific version.
 		newVersion, err := bumpVersion(product.GetVersion(), releaseType)
@@ -699,7 +573,7 @@ specification as determined by alis.exchange.`),
 
 		// check if we need to wait for operation to complete.
 		if asyncFlag {
-			pterm.Debug.Printf("Operation:\n%s\n", op)
+			pterm.Debug.Printf("GetOperation:\n%s\n", op)
 			pterm.Success.Printf("Launched Update in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
 		} else {
 			// wait for the long-running operation to complete.
@@ -734,7 +608,7 @@ deploys it to one or more environments`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -743,7 +617,7 @@ deploys it to one or more environments`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// ask the user to select one or more deployments
 		productDeployments, err := selectProductDeployments(cmd.Context(), product.GetName())
@@ -792,7 +666,7 @@ deploys it to one or more environments`),
 
 			// check if we need to wait for operation to complete.
 			if asyncFlag {
-				pterm.Debug.Printf("Operation:\n%s\n", op)
+				pterm.Debug.Printf("GetOperation:\n%s\n", op)
 				pterm.Success.Printf("Launched Update in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
 			} else {
 				// wait for the long-running operation to complete.
@@ -833,7 +707,7 @@ var getkeyProductCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -843,7 +717,7 @@ var getkeyProductCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// ask the user to select a deployment
 		productDeployments, err := selectProductDeployments(cmd.Context(), product.GetName())
@@ -898,7 +772,7 @@ https://github.com/pseudomuto/protoc-gen-doc#installation`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Organisation:\n%s\n", organisation)
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
 
 		// Retrieve the product resource
 		product, err := alisProductsClient.GetProduct(cmd.Context(),
@@ -907,7 +781,7 @@ https://github.com/pseudomuto/protoc-gen-doc#installation`),
 			pterm.Error.Println(err)
 			return
 		}
-		pterm.Debug.Printf("Product:\n%s\n", product)
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
 
 		// Generate the index.html
 		cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
