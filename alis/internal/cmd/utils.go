@@ -703,3 +703,9 @@ func genProductDescriptorFile(product string) error {
 	}
 	return nil
 }
+
+// validGitDirectory check that the provided directory is a valid git directory.
+func validGitDirectory(dir string) (bool, error) {
+
+	return true, nil
+}

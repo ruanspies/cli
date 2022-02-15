@@ -276,6 +276,13 @@ var getNeuronCmd = &cobra.Command{
 			return
 		}
 
+		// Display links to compare repos:
+		if len(listNeuronVersionsRes.GetNeuronVersions()) > 1 {
+			pterm.Printf("Recent changes:\n")
+			pterm.Printf("Product: https://source.cloud.google.com/%s/product.%s/+/%s...%s\n", organisation.GetGoogleProjectId(), productID, listNeuronVersionsRes.GetNeuronVersions()[0].GetCommitSha(), listNeuronVersionsRes.GetNeuronVersions()[1].GetCommitSha())
+			pterm.Printf("Proto: https://source.cloud.google.com/%s/proto/+/%s...%s\n\n", organisation.GetGoogleProjectId(), listNeuronVersionsRes.GetNeuronVersions()[0].GetProtoCommitSha(), listNeuronVersionsRes.GetNeuronVersions()[1].GetProtoCommitSha())
+		}
+
 		// Default envs
 		table := pterm.TableData{[]string{"Env", "Default Value"}}
 		for _, e := range neuron.GetEnvs() {

@@ -32,8 +32,7 @@ The CLI makes use of Google Cloud SDK authentication to seamlessly authenticate 
 
 Install any one of the **three latest major** [releases of Go](https://golang.org/doc/devel/release.html).  For installation instructions, see Go’s [Getting Started](https://golang.org/doc/install) guide.
 
-_Check Success_
-After installation, running `go version` should reflect one of the three latest major Go versions.
+☑️ After installation, running `go version` should reflect one of the three latest major Go versions.
 
 ### Protocol Buffer compiler
 
@@ -61,9 +60,7 @@ Your Git needs to be configured with Google Cloud Source repositories. Credentia
 1. Access [this link](https://source.developers.google.com/auth/start?scopes=https://www.googleapis.com/auth/cloud-platform&state=) and log in with your Google credentials
 2. Copy the relevant script into your terminal
 
-_Check_
-
-Check if this was successful by opening the `.gitcookies` file in Vim: `vim ~/.gitcookies`. If successful, the file should contain a `source.developers.google.com` entry.
+☑️ Check if this was successful by opening the `.gitcookies` file in Vim: `vim ~/.gitcookies`. If successful, the file should contain a `source.developers.google.com` entry.
            
 ### Git Configuration variables
 
@@ -85,15 +82,14 @@ Since the CLI is in a private repository, you will need to ensure that:
             export TOKEN="PASTE_THE_GENERATED_TOKEN_HERE"
             git config --global url."https://${GIT_USER}:${TOKEN}@github.com".insteadOf "https://github.com"
         
-_Check_
-
-Check if this was successful by running `git config -l`. The response should include:
+☑️ Check if this was successful by running `git config -l`. The response should include:
 
     
     user.name="YOUR_GITHUB_USERNAME"
     user.email="YOUR_GITHUB_EMAIL"
     url.https://{YOUR_GITHUB_USERNAME}:{GITHUB_TOKEN}@github.com.insteadof=https://github.com
     
+❗️Note that there should only be one _url.https_ entry for the _github.com_, if not open the `~/.gitconfig` in your editor and remove the older entries.
 
 ## Installation
 
