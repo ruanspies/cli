@@ -396,7 +396,7 @@ func askUserProductEnvs(envs []*pbProducts.Product_Env) ([]*pbProducts.Product_E
 		pterm.Info.Println("Please provide new values for the above variables:\n- leave blank (enter) to keep unchanged\n- 'REMOVE' to remove")
 
 		for _, env := range envs {
-			input, err := askUserString(env.GetName()+": ", "^$|^[a-zA-Z0-9:._-]+$")
+			input, err := askUserString(env.GetName()+": ", `^$|^[a-zA-Z0-9:._\/-]+$`)
 			if err != nil {
 				return nil, err
 			}
@@ -429,7 +429,7 @@ func askUserProductEnvs(envs []*pbProducts.Product_Env) ([]*pbProducts.Product_E
 			if err != nil {
 				return nil, err
 			}
-			value, err := askUserString("Value: ", "^[a-zA-Z0-9:._-]+$")
+			value, err := askUserString("Value: ", `^$|^[a-zA-Z0-9:._\/-]+$`)
 			if err != nil {
 				return nil, err
 			}
@@ -467,7 +467,7 @@ func askUserNeuronEnvs(envs []*pbProducts.Neuron_Env) ([]*pbProducts.Neuron_Env,
 		pterm.Info.Println("Please provide new values for the above variables:\n- leave blank (enter) to keep unchanged\n- 'REMOVE' to remove")
 
 		for _, env := range envs {
-			input, err := askUserString(env.GetName()+": ", "^$|^[a-zA-Z0-9:._-]+$")
+			input, err := askUserString(env.GetName()+": ", `^$|^[a-zA-Z0-9:._\/-]+$`)
 			if err != nil {
 				return nil, err
 			}
@@ -500,7 +500,7 @@ func askUserNeuronEnvs(envs []*pbProducts.Neuron_Env) ([]*pbProducts.Neuron_Env,
 			if err != nil {
 				return nil, err
 			}
-			value, err := askUserString("Value: ", "^[a-zA-Z0-9:._-]+$")
+			value, err := askUserString("Value: ", `^$|^[a-zA-Z0-9:._\/-]+$`)
 			if err != nil {
 				return nil, err
 			}
