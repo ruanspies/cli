@@ -89,7 +89,7 @@ Since the CLI is in a private repository, you will need to ensure that:
     user.email="YOUR_GITHUB_EMAIL"
     url.https://{YOUR_GITHUB_USERNAME}:{GITHUB_TOKEN}@github.com.insteadof=https://github.com
     
-❗️Note that there should only be one _url.https_ entry for the _github.com_, if not open the `~/.gitconfig` in your editor and remove the older entries.
+❗️Note that there should only be one _url.https_ entry for the _github.com_, if not, open the `~/.gitconfig` in your editor and remove the older entries.
 
 ## Installation
 
