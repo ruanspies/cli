@@ -691,7 +691,7 @@ var deployNeuronCmd = &cobra.Command{
 		`This method retrieves the latest version of the neuron and
 deploys it to one or more environments`),
 	Args:    validateNeuronArg,
-	Example: pterm.LightYellow("alis neuron build {orgID}.{productID}.{neuronID}\nalis neuron build alis.in.resources-events-v1"),
+	Example: pterm.LightYellow("alis neuron deploy {orgID}.{productID}.{neuronID}\nalis neuron deploy alis.in.resources-events-v1"),
 	Run: func(cmd *cobra.Command, args []string) {
 		var op *longrunning.Operation
 		organisationID = strings.Split(args[0], ".")[0]
