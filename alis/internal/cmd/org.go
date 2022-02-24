@@ -51,13 +51,20 @@ var createOrgCmd = &cobra.Command{
 			return
 		}
 
+		billingAccountID, err := askUserString("Organisation Billing Account ID: ", `^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$`)
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
 		// Create a new product resource
 		op, err := alisProductsClient.CreateOrganisation(cmd.Context(), &pbProducts.CreateOrganisationRequest{
 			Organisation: &pbProducts.Organisation{
-				DisplayName: strings.ToTitle(organisationID),
-				State:       pbProducts.Organisation_DEV,
-				Owner:       "jan@alis.capital",
-				Domain:      domain,
+				DisplayName:    strings.ToTitle(organisationID),
+				State:          pbProducts.Organisation_DEV,
+				Owner:          "jan@alis.capital",
+				Domain:         domain,
+				BillingAccount: "billingAccounts/" + billingAccountID,
 			},
 			OrganisationId: organisationID,
 		})

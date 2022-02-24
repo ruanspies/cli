@@ -31,7 +31,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.2.2"
+const VERSION = "3.3.0"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -105,7 +105,7 @@ func init() {
 	// Define own commandline message type to use for tips.
 	ptermTip = pterm.PrefixPrinter{
 		Prefix: pterm.Prefix{
-			Text:  " USAGE TIP ",
+			Text:  " TIP ",
 			Style: pterm.NewStyle(pterm.FgLightYellow, pterm.BgDarkGray),
 		},
 		Scope:          pterm.Scope{},

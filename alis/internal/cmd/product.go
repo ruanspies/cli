@@ -82,6 +82,13 @@ var createProductCmd = &cobra.Command{
 			return
 		}
 
+		ptermTip.Println("The organisation has a billing account ID of " + strings.Split(organisation.GetBillingAccount(), "/")[1])
+		billingAccountID, err := askUserString("Product level Billing Account ID: ", `^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$`)
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
 		// Get product Template files.
 		// push boiler plate code to local environment
 		files, err := TemplateFs.ReadDir("templates/product")
@@ -138,9 +145,10 @@ var createProductCmd = &cobra.Command{
 		op, err := alisProductsClient.CreateProduct(cmd.Context(), &pbProducts.CreateProductRequest{
 			Parent: organisation.GetName(),
 			Product: &pbProducts.Product{
-				DisplayName: displayName,
-				Owner:       owner,
-				Description: description,
+				DisplayName:    displayName,
+				Owner:          owner,
+				Description:    description,
+				BillingAccount: "billingAccounts/" + billingAccountID,
 			},
 			ProductId: productID,
 		})

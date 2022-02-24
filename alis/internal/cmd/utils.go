@@ -185,7 +185,8 @@ func selectProductDeployments(ctx context.Context, parent string) ([]*pbProducts
 	})
 
 	if len(productDeployments.GetProductDeployments()) == 0 {
-		input, err := askUserString("the product ("+parent+") has no deployments.\ncreate one? (y|n):", `^y|n$`)
+		pterm.Warning.Printf("the product (%s) has no deployments\n", parent)
+		input, err := askUserString("Create a new ProductDeployment? (y|n):", `^y|n$`)
 		if err != nil {
 			return nil, err
 		}
@@ -323,7 +324,13 @@ func validateNeuronArg(cmd *cobra.Command, args []string) error {
 }
 
 // createProductDeployment creates a new product deployment and waits until done.
-func createProductDeployment(ctx context.Context, product string) (*pbProducts.ProductDeployment, error) {
+func createProductDeployment(ctx context.Context, productName string) (*pbProducts.ProductDeployment, error) {
+
+	// retrieve a copy of the Product Resource
+	product, err := alisProductsClient.GetProduct(ctx, &pbProducts.GetProductRequest{Name: productName})
+	if err != nil {
+		return nil, err
+	}
 
 	// Get additional user input
 	pterm.Info.Println("Great. Let's create a new deployment.  Please provide the following for the deployment:")
@@ -345,13 +352,19 @@ func createProductDeployment(ctx context.Context, product string) (*pbProducts.P
 	if err != nil {
 		return nil, err
 	}
+	ptermTip.Printf("The Product (%s) has a billing account ID of %s\n", product.GetName(), strings.Split(product.GetBillingAccount(), "/")[1])
+	billingAccountID, err := askUserString("ProductDeployment Billing Account ID: ", `^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$`)
+	if err != nil {
+		return nil, err
+	}
 
 	op, err := alisProductsClient.CreateProductDeployment(ctx, &pbProducts.CreateProductDeploymentRequest{
-		Parent: product,
+		Parent: product.GetName(),
 		ProductDeployment: &pbProducts.ProductDeployment{
-			Environment: env,
-			Owner:       owner,
-			DisplayName: displayName,
+			Environment:    env,
+			Owner:          owner,
+			DisplayName:    displayName,
+			BillingAccount: "billingAccounts/" + billingAccountID,
 		},
 	})
 	if err != nil {
