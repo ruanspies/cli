@@ -136,6 +136,7 @@ the changes to the master branch and run the command "alis neuron build ..." `),
 		if err != nil {
 			return
 		}
+		pterm.Info.Printf("Created the following files:\n")
 		for i, f := range files {
 
 			fileTemplate, err := TemplateFs.ReadFile("templates/go/" + f.Name())
@@ -187,11 +188,11 @@ the changes to the master branch and run the command "alis neuron build ..." `),
 				pterm.Error.Println(err)
 				return
 			}
-			pterm.Info.Printf("Created %s/%s\n", destDir, filename)
+			pterm.Printf("%s%s/%s\n", pterm.Cyan(" ● "), destDir, filename)
 		}
-		ptermTip.Printf("The above files have been added to your proto and product repositories, but have " +
-			"not yet been committed.\nMake the necessary changes to the files, commit them to the master before running " +
-			"the `alis neuron build` command\n")
+		ptermTip.Printf("The above files have been added to your proto and product repositories, but have "+
+			"not yet been committed.\nMake the necessary changes to the files, commit them to the master before running "+
+			"the `alis neuron build %s.%s.%s` command\n", organisationID, productID, neuronID)
 	},
 }
 

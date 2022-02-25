@@ -62,7 +62,7 @@ func (e Entry) String() string {
 	}
 
 	// if Development is local then print out all logs
-	if os.Getenv("ENV") == "DEV" {
+	if os.Getenv("ENV") == "LOCAL" {
 		var prefix string
 		switch e.Severity {
 		case LogSeverity_DEBUG:
