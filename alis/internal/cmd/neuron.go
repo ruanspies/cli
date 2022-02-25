@@ -528,7 +528,7 @@ This registry then becomes the source for neuron deployments.`),
 		neuronID = strings.Split(args[0], ".")[2]
 
 		// fail the build if there is a `replace` entry in the go.mod file.
-		neuronPath := fmt.Sprintf("%s/alis.exchange/%s/productss/%s/%s", homeDir, organisationID, productID, strings.ReplaceAll(neuronID, "-", "/"))
+		neuronPath := fmt.Sprintf("%s/alis.exchange/%s/products/%s/%s", homeDir, organisationID, productID, strings.ReplaceAll(neuronID, "-", "/"))
 		goMod, err := getGoMod(cmd.Context(), neuronPath)
 		// don't fail when err != nil - i.e. there is not goMod file.
 		if err == nil && goMod.Replace != nil {
