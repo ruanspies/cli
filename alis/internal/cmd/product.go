@@ -169,6 +169,20 @@ var createProductCmd = &cobra.Command{
 				return
 			}
 		}
+
+		// Get a product resource
+		product, err := alisProductsClient.GetProduct(cmd.Context(),
+			&pbProducts.GetProductRequest{Name: organisation.GetName() + "/products/" + productID})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
+		// display some user instructions to perform once a new product has been created.
+		ptermTip.Println("Now that you have a new product there are a few minor things you need to take care of:")
+		pterm.Printf("👉 Your product has a new service account: alis-exchange@%s.iam.gserviceaccount.com.  Navigate to https://console.cloud.google.com/billing and give the Billing Account User role to relevant billing account you will be using for your ProductDeployments.\n", product.GetGoogleProjectId())
+		pterm.Printf("👉 Retrieve a copy of your repository using the command: alis product get %s.%s \n", organisationID, productID)
+		pterm.Println("👉 Open the repository in your IDE and create your first empty commit.")
 	},
 	Args:    validateProductArg,
 	Example: pterm.LightYellow("alis product create foo.aa"),
