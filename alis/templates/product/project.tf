@@ -6,7 +6,7 @@ resource "google_project" "product_deployment" {
   labels = {
     "managed-by-alis" : true
   }
-  billing_account = var.ALIS_OS_BILLING
+  billing_account = var.ALIS_OS_BILLING_ACCOUNT_ID
 }
 
 // place the ProductDeployment in the product folder
