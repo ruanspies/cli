@@ -3,6 +3,7 @@ package cmd
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
@@ -23,6 +24,35 @@ import (
 	"strings"
 	"time"
 )
+
+// GoMod represents content in a go.mod file.
+type GoMod struct {
+	Module struct {
+		Path string `json:"Path"`
+	} `json:"Module"`
+	Go      string `json:"Go"`
+	Require []struct {
+		Path     string `json:"Path"`
+		Version  string `json:"Version"`
+		Indirect bool   `json:"Indirect,omitempty"`
+	} `json:"Require"`
+	Exclude []struct {
+		Path    string `json:"Path"`
+		Version string `json:"Version"`
+	} `json:"Exclude"`
+	Replace []struct {
+		Old struct {
+			Path string `json:"Path"`
+		} `json:"Old"`
+		New struct {
+			Path string `json:"Path"`
+		} `json:"New"`
+	} `json:"Replace"`
+	Retract []struct {
+		Low  string `json:"Low"`
+		High string `json:"High"`
+	} `json:"Retract"`
+}
 
 // commitTagAndPush is a utility to manage commits, tagging and git push commands.
 // Returns the commit hash.
@@ -721,4 +751,22 @@ func genProductDescriptorFile(product string) error {
 func validGitDirectory(dir string) (bool, error) {
 
 	return true, nil
+}
+
+// getGoMod returns the contents of the go.mod file
+func getGoMod(ctx context.Context, neuronPath string) (*GoMod, error) {
+
+	goMod := &GoMod{}
+
+	cmds := "go mod edit -json " + neuronPath + "/go.mod"
+	out, err := exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	// marshall the commandline output to a GoMod type.
+	err = json.Unmarshal(out, &goMod)
+	if err != nil {
+		return nil, err
+	}
+	return goMod, nil
 }

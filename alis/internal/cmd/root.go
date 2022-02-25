@@ -31,7 +31,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.3.1"
+const VERSION = "3.4.0"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -55,7 +55,12 @@ var rootCmd = &cobra.Command{
 //	Run: func(cmd *cobra.Command, args []string) {
 //
 //		//generateFileDescriptorSet("organisations/alis/products/in/neurons/resources-instruments-v2")
-//		generateFileDescriptorSet("organisations/alis/products/fe/neurons/resources-store-v1")
+//		res, err := goModHasReplacement(context.Background(), "/Users/jankrynauw/alis.exchange/alis/products/in/resources/events/v1")
+//		if err != nil {
+//			log.Println(err)
+//		} else {
+//			log.Println(res)
+//		}
 //
 //		return
 //	},

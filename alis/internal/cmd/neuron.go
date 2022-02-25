@@ -527,6 +527,18 @@ This registry then becomes the source for neuron deployments.`),
 		productID = strings.Split(args[0], ".")[1]
 		neuronID = strings.Split(args[0], ".")[2]
 
+		// fail the build if there is a `replace` entry in the go.mod file.
+		neuronPath := fmt.Sprintf("%s/alis.exchange/%s/productss/%s/%s", homeDir, organisationID, productID, strings.ReplaceAll(neuronID, "-", "/"))
+		goMod, err := getGoMod(cmd.Context(), neuronPath)
+		// don't fail when err != nil - i.e. there is not goMod file.
+		if err == nil && goMod.Replace != nil {
+			pterm.Error.Printf("When building a new NeuronVersion, `replace` entries are not allowed in your go.mod (%s/go.mod) file\nPlease remove / comment out the following before running `alis neuron build %s.%s.%s`\n", neuronPath, organisationID, productID, neuronID)
+			for _, e := range goMod.Replace {
+				pterm.Printf(" %s %s 👉 %s\n", pterm.Red("●"), e.Old.Path, e.New.Path)
+			}
+			return
+		}
+
 		// Retrieve the organisation resource
 		organisation, err := alisProductsClient.GetOrganisation(cmd.Context(),
 			&pbProducts.GetOrganisationRequest{Name: "organisations/" + organisationID})
@@ -562,8 +574,6 @@ This registry then becomes the source for neuron deployments.`),
 			pterm.Error.Println(err)
 			return
 		}
-
-		//var op *longrunning.Operation
 
 		// Retrieve the latest version
 		res, err := alisProductsClient.ListNeuronVersions(cmd.Context(), &pbProducts.ListNeuronVersionsRequest{
