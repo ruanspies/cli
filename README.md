@@ -109,6 +109,8 @@ go install github.com/alis-x/cli/alis@latest
 echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
 ```
 
+4. Close and restart all currently open terminal windows, including IDEs, such that the configurations of the paths can take place.
+
 ## Try it out
 
 ```bash
