@@ -382,7 +382,7 @@ func createProductDeployment(ctx context.Context, productName string) (*pbProduc
 	if err != nil {
 		return nil, err
 	}
-	ptermTip.Printf("The Product (%s) has a billing account ID of %s\n", product.GetName(), strings.Split(product.GetBillingAccount(), "/")[1])
+	ptermTip.Printf("The Product (%s) has a billing account ID of %s\n", product.GetName(), strings.Split(product.GetBillingAccount(), "/")[1]+"\nNavigate to https://console.cloud.google.com/billing to see the billing accounts available to you.")
 	billingAccountID, err := askUserString("ProductDeployment Billing Account ID: ", `^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$`)
 	if err != nil {
 		return nil, err

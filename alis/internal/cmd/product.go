@@ -82,7 +82,7 @@ var createProductCmd = &cobra.Command{
 			return
 		}
 
-		ptermTip.Println("The organisation has a billing account ID of " + strings.Split(organisation.GetBillingAccount(), "/")[1])
+		ptermTip.Println("The organisation has a billing account ID of " + strings.Split(organisation.GetBillingAccount(), "/")[1] + "\nNavigate to https://console.cloud.google.com/billing to see the billing accounts available to you.")
 		billingAccountID, err := askUserString("Product level Billing Account ID: ", `^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$`)
 		if err != nil {
 			pterm.Error.Println(err)
