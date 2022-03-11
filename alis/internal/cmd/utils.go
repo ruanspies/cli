@@ -65,6 +65,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 	out, err := exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
 		pterm.Debug.Println(fmt.Sprintf("%s", out))
+		return "", err
 	}
 
 	// Commit changes.
@@ -79,6 +80,7 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 		out, err := exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
 		if err != nil {
 			pterm.Debug.Println(fmt.Sprintf("%s", out))
+			return "", err
 		}
 	}
 
@@ -737,7 +739,7 @@ func genProductDescriptorFile(product string) error {
 
 	// Generate the descriptor.pb at product level
 	// The descriptor.pb at product level represents all the underlying neurons.
-	cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
+	cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
 		"protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_imports --include_source_info $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
 	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	_, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
