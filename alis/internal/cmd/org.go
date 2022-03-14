@@ -65,6 +65,7 @@ var createOrgCmd = &cobra.Command{
 				Owner:          "jan@alis.capital",
 				Domain:         domain,
 				BillingAccount: "billingAccounts/" + billingAccountID,
+				IdentityUri:    "identity." + domain,
 			},
 			OrganisationId: organisationID,
 		})
