@@ -26,7 +26,7 @@ import (
 	"github.com/alis-x/cli/alis/internal/cmd"
 )
 
-//go:embed templates/go/* templates/product/*
+//go:embed templates/go/* templates/product/* internal/cmd/neuron/python/*
 var templateFs embed.FS
 
 func main() {

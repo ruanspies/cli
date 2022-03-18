@@ -120,6 +120,7 @@ you most likely will have to run the command: "alis org get google"`),
 			pterm.Error.Println(err)
 			return
 		}
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", res)
 
 		// Clone the proto repository
 		spinner, _ := pterm.DefaultSpinner.Start("Updating " + homeDir + "/alis.exchange/" + organisationID + "/proto... ")
@@ -177,7 +178,6 @@ you most likely will have to run the command: "alis org get google"`),
 
 		spinner.Success("Updated repository " + homeDir + "/alis.exchange/" + organisationID + "/protobuf/python. ")
 
-		pterm.Debug.Printf("GetOrganisation:\n%s\n", res)
 		ptermTip.Println("Are you making use of Google protocol buffers?\nRun `alis org get google` to download a local copy\nof of their common protocol buffers as well.")
 	},
 	Args:    validateOrgArg,

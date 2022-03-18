@@ -973,6 +973,24 @@ the latest protobufs from the repo into your gRPC service.`),
 				pterm.Warning.Print(fmt.Sprintf("Generating protocol buffers for python...\n%s", out))
 			}
 			pterm.Success.Printf("Generated protocol buffers for Python.\nProto source: %s\n", neuronProtoFullPath)
+
+			// Publish to protobuf repository if not in local mode.
+			if pushProtocolBuffers {
+				pterm.Error.Println("Push for python not yet supported.")
+
+				//protobufPythonRepo := fmt.Sprintf("%s/alis.exchange/%s/protobuf/python", homeDir, organisationID)
+				//_ = protobufPythonRepo
+				//out, err := exec.CommandContext(context.Background(), "bash", "-c", "....").CombinedOutput()
+				//if err != nil {
+				//	pterm.Error.Printf(fmt.Sprintf("%s", out))
+				//	pterm.Error.Println(err)
+				//	return
+				//}
+				//if strings.Contains(fmt.Sprintf("%s", out), "warning") {
+				//	pterm.Warning.Print(fmt.Sprintf("Publishing protocol buffers for python...\n%s", out))
+				//}
+				//pterm.Success.Println("Published protocol buffers for Python")
+			}
 		}
 
 		return
