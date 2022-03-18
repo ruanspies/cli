@@ -961,7 +961,7 @@ the latest protobufs from the repo into your gRPC service.`),
 				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/` + strings.Split(neuronID, "-")[0] + `/__init__.py` + " && " +
 				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/` + strings.Split(neuronID, "-")[0] + `/` + strings.Split(neuronID, "-")[1] + `/__init__.py` + " && " +
 				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/` + strings.Split(neuronID, "-")[0] + `/` + strings.Split(neuronID, "-")[1] + `/` + strings.Split(neuronID, "-")[2] + `/__init__.py` + " && " +
-				"python3 -m grpc_tools.protoc --python_out=$HOME/alis.exchange/" + organisationID + "/protobuf/python --go_opt=paths=source_relative --grpc_python_out=$HOME/alis.exchange/" + organisationID + "/protobuf/python -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
+				"python3 -m grpc_tools.protoc --python_out=$HOME/alis.exchange/" + organisationID + "/protobuf/python --grpc_python_out=$HOME/alis.exchange/" + organisationID + "/protobuf/python -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
 			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 			out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 			if err != nil {
