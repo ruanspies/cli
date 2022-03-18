@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/pterm/pterm"
@@ -12,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -22,7 +24,6 @@ var (
 	pushProtocolBuffers        bool
 	genprotoPython             bool
 	genprotoGo                 bool
-	genprotoR                  bool
 	setNeuronDeploymentEnvFlag bool
 	setUpdateNeuronEnvFlag     bool
 	skipArtifactBuildFlag      bool
@@ -941,6 +942,8 @@ the latest protobufs from the repo into your gRPC service.`),
 				if err != nil {
 					return
 				}
+				pterm.Success.Println("Published protocol buffers for Go")
+
 				ptermTip.Printf("Now that your protobuf if updated, please ensure that you update your \n" +
 					"go.mod file to reflect this new version of your protobuf.\n")
 			} else {
@@ -976,20 +979,81 @@ the latest protobufs from the repo into your gRPC service.`),
 
 			// Publish to protobuf repository if not in local mode.
 			if pushProtocolBuffers {
-				pterm.Error.Println("Push for python not yet supported.")
 
-				//protobufPythonRepo := fmt.Sprintf("%s/alis.exchange/%s/protobuf/python", homeDir, organisationID)
-				//_ = protobufPythonRepo
-				//out, err := exec.CommandContext(context.Background(), "bash", "-c", "....").CombinedOutput()
-				//if err != nil {
-				//	pterm.Error.Printf(fmt.Sprintf("%s", out))
-				//	pterm.Error.Println(err)
-				//	return
-				//}
-				//if strings.Contains(fmt.Sprintf("%s", out), "warning") {
-				//	pterm.Warning.Print(fmt.Sprintf("Publishing protocol buffers for python...\n%s", out))
-				//}
-				//pterm.Success.Println("Published protocol buffers for Python")
+				protobufPythonRepo := fmt.Sprintf("%s/alis.exchange/%s/protobuf/python", homeDir, organisationID)
+
+				// bump setup.py version
+				var tpl bytes.Buffer
+				setupPyTemplate, err := template.ParseFiles(protobufPythonRepo + "/setup.py")
+				if err != nil {
+					pterm.Error.Println(err)
+					return
+				}
+				if err = setupPyTemplate.Execute(&tpl, struct{}{}); err != nil {
+					pterm.Error.Println(err)
+					return
+				}
+				rel := regexp.MustCompile("version=\"(.*)\",")
+				versionComponents := strings.Split(rel.FindStringSubmatch(tpl.String())[1], ".")
+				minorVersion, err := strconv.Atoi(versionComponents[2])
+				versionComponents[2] = strconv.Itoa(minorVersion + 1)
+				newVersion := rel.ReplaceAllString(tpl.String(), "version=\""+strings.Join(versionComponents, ".")+"\",")
+				out, err = exec.CommandContext(context.Background(), "bash", "-c", "echo "+"'"+newVersion+"'"+" > "+protobufPythonRepo+"/setup.py").CombinedOutput()
+				if err != nil {
+					pterm.Error.Printf(fmt.Sprintf("%s", out))
+					pterm.Error.Println(err)
+					return
+				}
+
+				tpl = bytes.Buffer{}
+				publishTemplate, err := TemplateFs.ReadFile("internal/cmd/neuron/python/publishPython.sh")
+				if err != nil {
+					pterm.Error.Println(err)
+					return
+				}
+				t, err := template.New("file").Parse(string(publishTemplate))
+				if err != nil {
+					pterm.Error.Println(err)
+					return
+				}
+				if err := t.Execute(&tpl, struct {
+					OrgProjectID string
+				}{
+					OrgProjectID: organisation.GetGoogleProjectId(),
+				}); err != nil {
+					pterm.Error.Println(err)
+					return
+				}
+
+				out, err = exec.CommandContext(context.Background(), "bash", "-c", tpl.String()).CombinedOutput()
+				if err != nil {
+					pterm.Error.Printf(fmt.Sprintf("%s", out))
+					pterm.Error.Println(err)
+					return
+				}
+
+				if strings.Contains(fmt.Sprintf("%s", out), "warning") {
+					pterm.Warning.Print(fmt.Sprintf("Publishing protocol buffers for python...\n%s", out))
+				}
+
+				message := fmt.Sprintf("chore(%s): updated by alis_ CLI", neuronID)
+				commitPath := neuronProtobufFullPath +
+					" " + protobufPythonRepo + "/setup.py" +
+					" " + protobufPythonRepo + "/alis/" + productID + "/__init__.py" +
+					" " + protobufPythonRepo + "/alis/" + productID + "/" + strings.Split(neuronID, "-")[0] + "/__init__.py" +
+					" " + protobufPythonRepo + "/alis/" + productID + "/" + strings.Split(neuronID, "-")[0] + "/" + strings.Split(neuronID, "-")[1] + "/__init__.py"
+
+				_, err = commitTagAndPush(cmd.Context(), protobufPythonRepo, commitPath, message,
+					"", true, true)
+				if err != nil {
+					return
+				}
+
+				pterm.Success.Println("Published protocol buffers for Python")
+			} else {
+				ptermTip.Printf("The protobufs were generated for local development use only. To formally\n" +
+					"publish them use the `--push` flag to publish them to the \n" +
+					"protobuf libraries.\n")
 			}
 		}
 
@@ -1092,10 +1156,10 @@ func init() {
 	buildNeuronCmd.Flags().BoolVarP(&setUpdateNeuronEnvFlag, "env", "e", false, pterm.Green("Set or update the ENV variables."))
 	buildNeuronCmd.Flags().BoolVarP(&setUpdateNeuronStateFlag, "state", "s", false, pterm.Green("Update the state of the neuron."))
 
-	genprotoNeuronCmd.Flags().BoolVarP(&pushProtocolBuffers, "push", "", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
+	genprotoNeuronCmd.Flags().BoolVarP(&pushProtocolBuffers, "publish", "p", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
 
 	// Proto Generators
-	genprotoNeuronCmd.Flags().BoolVarP(&genprotoGo, "go", "g", true, pterm.Green("Generate the protocol buffers for Golang"))
-	genprotoNeuronCmd.Flags().BoolVarP(&genprotoPython, "python", "p", false, pterm.Green("Generate the protocol buffers for Python"))
+	genprotoNeuronCmd.Flags().BoolVarP(&genprotoGo, "go", "", true, pterm.Green("Generate the protocol buffers for Golang"))
+	genprotoNeuronCmd.Flags().BoolVarP(&genprotoPython, "python", "", false, pterm.Green("Generate the protocol buffers for Python"))
 	//genApiNeuronCmd.Flags().BoolVarP(&publishApiFlag, "push", "p", false, pterm.Green("Generate the api libraries and push them to the api repository"))
 }
