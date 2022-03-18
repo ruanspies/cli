@@ -69,7 +69,7 @@ var createOrgCmd = &cobra.Command{
 		}
 
 		// request domain
-		ptermTip.Println("Link to billing account: https://console.cloud.google.com/billing")
+		ptermTip.Println("Link to Folders : https://console.cloud.google.com/cloud-resource-manager")
 		folderID, err := askUserString("Folder ID (for example: 123456789123): ", `^\d+$`)
 		if err != nil {
 			pterm.Error.Println(err)
