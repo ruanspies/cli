@@ -68,6 +68,14 @@ var createOrgCmd = &cobra.Command{
 			return
 		}
 
+		// request domain
+		ptermTip.Println("Link to billing account: https://console.cloud.google.com/billing")
+		folderID, err := askUserString("Folder ID (for example: 123456789123): ", `^\d+$`)
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
 		ptermTip.Println("Link to billing account: https://console.cloud.google.com/billing")
 		billingAccountID, err := askUserString("Organisation Billing Account ID: ", `^[A-Z0-9]{6}-[A-Z0-9]{6}-[A-Z0-9]{6}$`)
 		if err != nil {
@@ -84,7 +92,7 @@ var createOrgCmd = &cobra.Command{
 				Domain:         domain,
 				IdentityUri:    "identity." + domain,
 				BillingAccount: "billingAccounts/" + billingAccountID,
-				Folder:         "folders/",
+				Folder:         "folders/" + folderID,
 			},
 			OrganisationId: organisationID,
 		})
