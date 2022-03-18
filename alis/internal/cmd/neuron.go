@@ -19,7 +19,10 @@ import (
 )
 
 var (
-	publishProtocolBuffersFlag bool
+	pushProtocolBuffers        bool
+	genprotoPython             bool
+	genprotoGo                 bool
+	genprotoR                  bool
 	setNeuronDeploymentEnvFlag bool
 	setUpdateNeuronEnvFlag     bool
 	skipArtifactBuildFlag      bool
@@ -858,7 +861,7 @@ deploys it to one or more environments`),
 // genprotoNeuronCmd represents the genproto command
 var genprotoNeuronCmd = &cobra.Command{
 	Use:   "genproto",
-	Short: pterm.Blue("Generates the protocol buffers files in go."),
+	Short: pterm.Blue("Generates the protocol buffers files for a specified language.  Golang is the default."),
 	Long: pterm.Green(
 		`This method uses the 'genproto-go' command line to generate protocol buffers 
 for the specified neuron.  These are generated locally only and should be used for local development of your gRPC services.
@@ -897,51 +900,79 @@ the latest protobufs from the repo into your gRPC service.`),
 		}
 		pterm.Debug.Printf("Get Neuron:\n%s\n", neuron)
 
-		// Generate the protocol buffers.
-		neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
-		neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
-		cmds := "rm -rf " + neuronProtobufFullPath + " && " +
-			"mkdir -p " + neuronProtobufFullPath + " && " +
-			"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
-			"protoc --go_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go_opt=paths=source_relative --go-grpc_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go-grpc_opt=paths=source_relative -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
+		// Generate the protocol buffers for Golang
+		if genprotoGo {
+			neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+			neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 
-		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
-		out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
-		if err != nil {
-			pterm.Error.Printf(fmt.Sprintf("%s", out))
-			pterm.Error.Println(err)
-			return
-		}
-		if strings.Contains(fmt.Sprintf("%s", out), "warning") {
-			pterm.Warning.Print(fmt.Sprintf("Generating protocol buffers...\n%s", out))
-		}
-		pterm.Success.Printf("Generated protocol buffers.\nProto source: %s\n", neuronProtoFullPath)
+			cmds := "rm -rf " + neuronProtobufFullPath + " && " +
+				"mkdir -p " + neuronProtobufFullPath + " && " +
+				"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
+				"protoc --go_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go_opt=paths=source_relative --go-grpc_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go-grpc_opt=paths=source_relative -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
 
-		// generate ProductDescriptorFile at product level.
-		err = genProductDescriptorFile("organisations/" + organisationID + "/products/" + productID)
-		if err != nil {
-			pterm.Error.Println(err)
-			return
-		}
-
-		pterm.Success.Println("Generated Product Descriptor File")
-
-		// Publish to protobuf repository if not in local mode.
-		if publishProtocolBuffersFlag {
-			// commit protocol buffers in go
-			protobufGoRepo := fmt.Sprintf("%s/alis.exchange/%s/protobuf/go", homeDir, organisationID)
-			message := fmt.Sprintf("chore(%s): updated by alis_ CLI", neuronID)
-			_, err = commitTagAndPush(cmd.Context(), protobufGoRepo, neuronProtobufFullPath,
-				message, "", true, true)
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+			out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 			if err != nil {
+				pterm.Error.Printf(fmt.Sprintf("%s", out))
+				pterm.Error.Println(err)
 				return
 			}
-			ptermTip.Printf("Now that your protobuf if updated, please ensure that you update your \n" +
-				"go.mod file to reflect this new version of your protobuf.\n")
-		} else {
-			ptermTip.Printf("The protobufs were generated for local development use only. To formally\n" +
-				"publish them use the `-p` or `--publish` flag to publish them to the \n" +
-				"protobuf libraries.\n")
+			if strings.Contains(fmt.Sprintf("%s", out), "warning") {
+				pterm.Warning.Print(fmt.Sprintf("Generating protocol buffers for go...\n%s", out))
+			}
+			pterm.Success.Printf("Generated protocol buffers for Go.\nProto source: %s\n", neuronProtoFullPath)
+
+			// generate ProductDescriptorFile at product level.
+			err = genProductDescriptorFile("organisations/" + organisationID + "/products/" + productID)
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+
+			pterm.Success.Println("Generated Product Descriptor File")
+
+			// Publish to protobuf repository if not in local mode.
+			if pushProtocolBuffers {
+				// commit protocol buffers in go
+				protobufGoRepo := fmt.Sprintf("%s/alis.exchange/%s/protobuf/go", homeDir, organisationID)
+				message := fmt.Sprintf("chore(%s): updated by alis_ CLI", neuronID)
+				_, err = commitTagAndPush(cmd.Context(), protobufGoRepo, neuronProtobufFullPath,
+					message, "", true, true)
+				if err != nil {
+					return
+				}
+				ptermTip.Printf("Now that your protobuf if updated, please ensure that you update your \n" +
+					"go.mod file to reflect this new version of your protobuf.\n")
+			} else {
+				ptermTip.Printf("The protobufs were generated for local development use only. To formally\n" +
+					"publish them use the `--push` flag to publish them to the \n" +
+					"protobuf libraries.\n")
+			}
+		}
+
+		if genprotoPython {
+			neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/python/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+			neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+
+			// TODO: create __init__.py using golang file io.
+			cmds := "rm -rf " + neuronProtobufFullPath + " && " +
+				"mkdir -p " + neuronProtobufFullPath + " && " +
+				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/__init__.py` + " && " +
+				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/` + strings.Split(neuronID, "-")[0] + `/__init__.py` + " && " +
+				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/` + strings.Split(neuronID, "-")[0] + `/` + strings.Split(neuronID, "-")[1] + `/__init__.py` + " && " +
+				`echo "__import__('pkg_resources').declare_namespace(__name__)" > $HOME/alis.exchange/` + organisationID + `/protobuf/python/` + organisationID + `/` + productID + `/` + strings.Split(neuronID, "-")[0] + `/` + strings.Split(neuronID, "-")[1] + `/` + strings.Split(neuronID, "-")[2] + `/__init__.py` + " && " +
+				"python3 -m grpc_tools.protoc --python_out=$HOME/alis.exchange/" + organisationID + "/protobuf/python --go_opt=paths=source_relative --grpc_python_out=$HOME/alis.exchange/" + organisationID + "/protobuf/python -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+			out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+			if err != nil {
+				pterm.Error.Printf(fmt.Sprintf("%s", out))
+				pterm.Error.Println(err)
+				return
+			}
+			if strings.Contains(fmt.Sprintf("%s", out), "warning") {
+				pterm.Warning.Print(fmt.Sprintf("Generating protocol buffers for python...\n%s", out))
+			}
+			pterm.Success.Printf("Generated protocol buffers for Python.\nProto source: %s\n", neuronProtoFullPath)
 		}
 
 		return
@@ -1042,32 +1073,11 @@ func init() {
 
 	buildNeuronCmd.Flags().BoolVarP(&setUpdateNeuronEnvFlag, "env", "e", false, pterm.Green("Set or update the ENV variables."))
 	buildNeuronCmd.Flags().BoolVarP(&setUpdateNeuronStateFlag, "state", "s", false, pterm.Green("Update the state of the neuron."))
-	//updateNeuronCmd.Flags().BoolVarP(&skipArtifactBuildFlag, "skip", "s", false, pterm.Green("Skip building new artifacts. Simply tag the "))
-	genprotoNeuronCmd.Flags().BoolVarP(&publishProtocolBuffersFlag, "push", "p", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
-	genApiNeuronCmd.Flags().BoolVarP(&publishApiFlag, "push", "p", false, pterm.Green("Generate the api libraries and push them to the api repository"))
-}
 
-////// genProtoPython generates protobuf files for python.
-////func genProtoPython(ctx context.Context, neuronID string) error {
-////	neuronPath := strings.Replace(neuronID, ".", "/", -1)
-////	org := strings.Split(neuronID, ".")[0]
-////	product := strings.Split(neuronID, ".")[1]
-////	contract := strings.Split(neuronID, ".")[2]
-////	neuron := strings.Split(neuronID, ".")[3]
-////	versionMajor := strings.Split(neuronID, ".")[4]
-////
-////	cmds := "rm -rf $HOME/alis/protobuf/python/" + neuronPath + " && " +
-////		"mkdir -p $HOME/alis/protobuf/python/" + neuronPath + " && " +
-////		`echo '__import__('"'"'pkg_resources'"'"').declare_namespace(__name__)' > $HOME/alis/protobuf/python/` + org + `/__init__.py` + " && " +
-////		`echo '__import__('"'"'pkg_resources'"'"').declare_namespace(__name__)' > $HOME/alis/protobuf/python/` + org + `/` + product + `/__init__.py` + " && " +
-////		`echo '__import__('"'"'pkg_resources'"'"').declare_namespace(__name__)' > $HOME/alis/protobuf/python/` + org + `/` + product + `/` + contract + `/__init__.py` + " && " +
-////		`echo '__import__('"'"'pkg_resources'"'"').declare_namespace(__name__)' > $HOME/alis/protobuf/python/` + org + `/` + product + `/` + contract + `/` + neuron + `/__init__.py` + " && " +
-////		`echo '__import__('"'"'pkg_resources'"'"').declare_namespace(__name__)' > $HOME/alis/protobuf/python/` + org + `/` + product + `/` + contract + `/` + neuron + `/` + versionMajor + `/__init__.py` + " && " +
-////		`python3 -m grpc_tools.protoc  --proto_path=. --proto_path=$HOME/google/proto --proto_path=$HOME/alis/proto --proto_path=. --python_out=$HOME/alis/protobuf/python --grpc_python_out=$HOME/alis/protobuf/python $(find $HOME/alis/proto/` + neuronPath + ` -iname "*.proto")`
-////
-////	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
-////	if err != nil {
-////		return fmt.Errorf("%s", out)
-////	}
-////	return nil
-////}
+	genprotoNeuronCmd.Flags().BoolVarP(&pushProtocolBuffers, "push", "", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
+
+	// Proto Generators
+	genprotoNeuronCmd.Flags().BoolVarP(&genprotoGo, "go", "g", true, pterm.Green("Generate the protocol buffers for Golang"))
+	genprotoNeuronCmd.Flags().BoolVarP(&genprotoPython, "python", "p", false, pterm.Green("Generate the protocol buffers for Python"))
+	//genApiNeuronCmd.Flags().BoolVarP(&publishApiFlag, "push", "p", false, pterm.Green("Generate the api libraries and push them to the api repository"))
+}

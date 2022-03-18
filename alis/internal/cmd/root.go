@@ -31,7 +31,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.4.7"
+const VERSION = "3.5.0"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -40,7 +40,7 @@ var rootCmd = &cobra.Command{
 	Long: pterm.Green("The alis CLI manages authentication, local configuration, developer workflow, \n" +
 		"and interactions with the alis_ os resources"),
 	Run: func(cmd *cobra.Command, args []string) {
-		return
+		pterm.Error.Println("a valid command is missing\nplease run 'alis -h' for details.")
 	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if debugFlag {
