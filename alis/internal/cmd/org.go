@@ -42,8 +42,6 @@ var createOrgCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		organisationID = args[0]
 
-		pterm.Info.Println(cmd.Context())
-
 		// request domain
 		domain, err := askUserString("Service domain (for example, alis.services, rezco.services): ", `(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]`)
 		if err != nil {

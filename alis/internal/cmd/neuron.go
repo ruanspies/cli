@@ -953,6 +953,7 @@ the latest protobufs from the repo into your gRPC service.`),
 			}
 		}
 
+		// generate protocol buffers for Python
 		if genprotoPython {
 			neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/python/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 			neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
@@ -1005,6 +1006,7 @@ the latest protobufs from the repo into your gRPC service.`),
 					return
 				}
 
+				// publish Python package to artifact registry
 				tpl = bytes.Buffer{}
 				publishTemplate, err := TemplateFs.ReadFile("internal/cmd/neuron/python/publishPython.sh")
 				if err != nil {
@@ -1017,9 +1019,11 @@ the latest protobufs from the repo into your gRPC service.`),
 					return
 				}
 				if err := t.Execute(&tpl, struct {
-					OrgProjectID string
+					OrgProjectID   string
+					OrganisationID string
 				}{
-					OrgProjectID: organisation.GetGoogleProjectId(),
+					OrgProjectID:   organisation.GetGoogleProjectId(),
+					OrganisationID: organisationID,
 				}); err != nil {
 					pterm.Error.Println(err)
 					return

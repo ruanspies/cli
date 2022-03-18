@@ -18,15 +18,11 @@ type grpcTokenSource struct {
 	oauth.TokenSource
 }
 
-// NewServerConnection creates a new gRPC connection to one of alis_' services.
+// NewServerConnection creates a new gRPC connection to one of alis_ services.
 //
 // The host should be the domain where the Service is hosted,:
 // Format: v1.{neuron}.{resources|services}.{deployment-project}.{domain}.alis.dev
 //
-// This method also uses the Google Default Credentials workflow.  To run this locally ensure that you have the
-// environmental variable GOOGLE_APPLICATION_CREDENTIALS = ../key.json set.
-//
-// The location defaults to "europe-west1" if not set, i.e. if empty ""
 //
 // Best practise is to create a new connection at global level, which could be used to run many methods.  This avoids
 // unnecessary api calls to retrieve the required ID tokens each time a single method is called.
@@ -39,7 +35,6 @@ func NewServerConnection(ctx context.Context, host string) (*grpc.ClientConn, er
 			"NewTokenSource: %s", err,
 		)
 	}
-
 	// Establishes a connection
 	var opts []grpc.DialOption
 	if host != "" {

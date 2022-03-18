@@ -1,5 +1,5 @@
 # setup pip configurations for uploads
-cd $HOME/alis.exchange/alis/protobuf/python || exit
+cd $HOME/alis.exchange/{{.OrganisationID}}/protobuf/python || exit
 mkdir $HOME/.config/pip
 echo "[global] index-url = https://europe-west1-python.pkg.dev/{{.OrgProjectID}}/protobuf-python/simple/" > $HOME/.config/pip/pip.conf
 

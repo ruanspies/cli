@@ -31,7 +31,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.6.0"
+const VERSION = "3.6.1"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -103,7 +103,6 @@ func init() {
 	// will be global for your application.
 	rootCmd.PersistentFlags().BoolVar(&debugFlag, "debug", false, pterm.Green("Run the commands in DEBUG mode."))
 	rootCmd.PersistentFlags().BoolVarP(&asyncFlag, "async", "a", false, pterm.Green("Return immediately, without waiting for the operation in progress to complete.\nOnly relevant if the command involves a long-running operation"))
-	//rootCmd.PersistentFlags().BoolVarP(&localFlag, "local", "l", false, pterm.Green("If possible run command in local mode.  For example, use with neuron '--genproto-go' tag to generate protos only locally."))
 	rootCmd.SilenceUsage = true
 	rootCmd.SilenceErrors = true
 
