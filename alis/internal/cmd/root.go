@@ -31,7 +31,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.6.1"
+const VERSION = "3.6.2"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
