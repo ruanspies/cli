@@ -71,7 +71,8 @@ var createProductCmd = &cobra.Command{
 			pterm.Error.Println(err)
 			return
 		}
-		owner, err := askUserString("Please provide an owner (email): ", `(?m)^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,10})$`)
+
+		owner, err := askUserString(fmt.Sprintf("Please provide an owner who is a user within the organisation (for example name.surname@%s):", organisation.GetDomain()), `(?m)^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,10})$`)
 		if err != nil {
 			pterm.Error.Println(err)
 			return
@@ -180,7 +181,10 @@ var createProductCmd = &cobra.Command{
 
 		// display some user instructions to perform once a new product has been created.
 		ptermTip.Println("Now that you have a new product there are a few minor things you need to take care of:")
-		pterm.Printf("👉 Your product has a new service account: alis-exchange@%s.iam.gserviceaccount.com.  Navigate to https://console.cloud.google.com/billing and give the Billing Account User role to relevant billing account you will be using for your ProductDeployments.\n", product.GetGoogleProjectId())
+		pterm.Printf("👉 Your product has a new service account: alis-exchange@%s.iam.gserviceaccount.com. The following permissions are required:\n"+
+			"a. Navigate to https://console.cloud.google.com/billing and give the Billing Account User role to relevant billing account you will be using for your ProductDeployments. (the Product Service Account needs to be able to allocate Billing Accounts to any deployments)\n"+
+			"b. Navigate to https://admin.google.com/ac/roles and assign the Groups Admin role to this service account. (the Product Service account needs to be able to create a group for each deployment)\n", product.GetGoogleProjectId())
+		pterm.Printf("👉 Your product has a new service account")
 		pterm.Printf("👉 Retrieve a copy of your repository using the command: alis product get %s.%s \n", organisationID, productID)
 		pterm.Println("👉 Open the repository in your IDE and create your first empty commit.")
 	},
