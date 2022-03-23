@@ -742,9 +742,9 @@ func genProductDescriptorFile(product string) error {
 	cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
 		"protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_imports --include_source_info $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
 	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
-	_, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
-		return err
+		return fmt.Errorf("error %s, with command line output:\n %s", err, out)
 	}
 	return nil
 }
