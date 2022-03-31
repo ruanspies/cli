@@ -12,7 +12,9 @@ import (
 	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
 	"google.golang.org/grpc"
 	"log"
+	"math/rand"
 	"os"
+	"os/exec"
 )
 
 var (
@@ -31,7 +33,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.6.7"
+const VERSION = "3.7.0"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -45,6 +47,18 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if debugFlag {
 			pterm.EnableDebugMessages()
+		}
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		// Randomly update the commandline one in every 21 times.
+		if rand.Intn(21) == 0 {
+			cmds := "alis update"
+			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+			_, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
+			if err != nil {
+				pterm.Debug.Println(cmds)
+				return
+			}
 		}
 	},
 }
