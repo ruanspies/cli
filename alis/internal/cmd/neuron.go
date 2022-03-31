@@ -26,7 +26,6 @@ var (
 	genprotoGo                 bool
 	setNeuronDeploymentEnvFlag bool
 	setUpdateNeuronEnvFlag     bool
-	skipArtifactBuildFlag      bool
 	setUpdateNeuronStateFlag   bool
 	setDeployNeuronStateFlag   bool
 	publishApiFlag             bool
@@ -903,9 +902,28 @@ the latest protobufs from the repo into your gRPC service.`),
 
 		// Generate the protocol buffers for Golang
 		if genprotoGo {
+			// set required path variables
 			neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
 			neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+			protobufGoRepoPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go"
 
+			// Clear any uncommitted changes to the repository
+			// This ensures that we are able to push protobuf changes generated in the next section in all scenarios
+			// When working on multiple neurons at the same time, there could be other uncommitted changes which will
+			// cause a merge conflict when committing the new protocol buffers in the push section below.
+			if pushProtocolBuffers {
+				cmds := "git -C " + protobufGoRepoPath + " reset --hard"
+				pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+				out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+				if err != nil {
+					pterm.Error.Printf(fmt.Sprintf("%s", out))
+					pterm.Error.Println(err)
+					return
+				}
+			}
+
+			// Clear all files in the relevant neuron folder.
+			// TODO: refactor the use of GOPRIVATE envs.
 			cmds := "rm -rf " + neuronProtobufFullPath + " && " +
 				"mkdir -p " + neuronProtobufFullPath + " && " +
 				"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
@@ -935,11 +953,11 @@ the latest protobufs from the repo into your gRPC service.`),
 			// Publish to protobuf repository if not in local mode.
 			if pushProtocolBuffers {
 				// commit protocol buffers in go
-				protobufGoRepo := fmt.Sprintf("%s/alis.exchange/%s/protobuf/go", homeDir, organisationID)
 				message := fmt.Sprintf("chore(%s): updated by alis_ CLI", neuronID)
-				_, err = commitTagAndPush(cmd.Context(), protobufGoRepo, neuronProtobufFullPath,
+				_, err := commitTagAndPush(cmd.Context(), protobufGoRepoPath, neuronProtobufFullPath,
 					message, "", true, true)
 				if err != nil {
+					pterm.Error.Println(err)
 					return
 				}
 				pterm.Success.Println("Published protocol buffers for Go")
