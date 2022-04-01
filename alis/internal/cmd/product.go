@@ -398,7 +398,8 @@ var treeProductCmd = &cobra.Command{
 
 			// Retrieve the latest version
 			res, err := alisProductsClient.ListNeuronVersions(cmd.Context(), &pbProducts.ListNeuronVersionsRequest{
-				Parent: neuron.GetName(),
+				Parent:   neuron.GetName(),
+				ReadMask: &fieldmaskpb.FieldMask{Paths: []string{"version", "state", "update_time"}},
 			})
 			if err != nil {
 				pterm.Error.Println(err)

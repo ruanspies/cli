@@ -7,7 +7,7 @@ require (
 	github.com/pterm/pterm v0.12.33
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
-	go.protobuf.alis.alis.exchange v0.0.0-20220224103601-06c578656068
+	go.protobuf.alis.alis.exchange v0.0.0-20220401074935-b79f50981b2c
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	google.golang.org/api v0.56.0
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71

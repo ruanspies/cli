@@ -581,8 +581,13 @@ This registry then becomes the source for neuron deployments.`),
 
 		// Retrieve the latest version
 		res, err := alisProductsClient.ListNeuronVersions(cmd.Context(), &pbProducts.ListNeuronVersionsRequest{
-			Parent: neuron.GetName(),
+			Parent:   neuron.GetName(),
+			ReadMask: &fieldmaskpb.FieldMask{Paths: []string{"version"}},
 		})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
 
 		// Retrieve the latest version
 		var latestVersion string
@@ -749,8 +754,13 @@ deploys it to one or more environments`),
 
 		// Retrieve the latest version
 		res, err := alisProductsClient.ListNeuronVersions(cmd.Context(), &pbProducts.ListNeuronVersionsRequest{
-			Parent: neuron.GetName(),
+			Parent:   neuron.GetName(),
+			ReadMask: &fieldmaskpb.FieldMask{Paths: []string{"version"}},
 		})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
 		if len(res.GetNeuronVersions()) == 0 {
 			pterm.Error.Println("there are no versions available, please run `alis neron build ...` to create a version")
 			return
