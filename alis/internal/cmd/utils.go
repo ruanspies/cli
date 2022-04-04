@@ -78,7 +78,9 @@ func commitTagAndPush(ctx context.Context, repoPath string, commitPath string, m
 		cmds = cmds + " && git -C " + repoPath + " commit -m '" + message + "' -- " + commitPath
 		pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 		out, err := exec.CommandContext(ctx, "bash", "-c", cmds).CombinedOutput()
-		if err != nil {
+		if strings.Contains(fmt.Sprintf("%s", out), "Already up to date.") {
+			pterm.Warning.Println(fmt.Sprintf("%s", out))
+		} else if err != nil {
 			pterm.Debug.Println(fmt.Sprintf("%s", out))
 			return "", err
 		}
