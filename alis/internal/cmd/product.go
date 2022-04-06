@@ -139,8 +139,6 @@ var createProductCmd = &cobra.Command{
 			"but have not yet been committed.\n" +
 			"Make the necessary changes to the files, commit them before running the `alis product build` " +
 			"command.\n")
-		ptermTip.Printf("You'll need to get a copy of this new product to your local environment.\n"+
-			"Run the command `alis product get %s.%s`", organisationID, productID)
 
 		// Create a product
 		op, err := alisProductsClient.CreateProduct(cmd.Context(), &pbProducts.CreateProductRequest{
@@ -182,10 +180,10 @@ var createProductCmd = &cobra.Command{
 		// display some user instructions to perform once a new product has been created.
 		ptermTip.Println("Now that you have a new product there are a few minor things you need to take care of:")
 		pterm.Printf("👉 Your product has a new service account: alis-exchange@%s.iam.gserviceaccount.com. The following permissions are required:\n"+
-			"a. Navigate to https://console.cloud.google.com/billing and give the Billing Account User role to relevant billing account you will be using for your ProductDeployments. (the Product Service Account needs to be able to allocate Billing Accounts to any deployments)\n"+
-			"b. Navigate to https://admin.google.com/ac/roles and assign the Groups Admin role to this service account. (the Product Service account needs to be able to create a group for each deployment)\n", product.GetGoogleProjectId())
-		pterm.Printf("👉 Your product has a new service account")
-		pterm.Printf("👉 Retrieve a copy of your repository using the command: alis product get %s.%s \n", organisationID, productID)
+			"a. Navigate to https://console.cloud.google.com/billing and give the Billing Account User role to relevant billing account you will be using for your ProductDeployments.\n   (the Product Service Account needs to be able to allocate Billing Accounts to any deployments)\n"+
+			"b. Navigate to https://admin.google.com/ac/roles and assign the Groups Editor role to this service account. (the Product Service account needs to be able to create a group for each deployment)\n", product.GetGoogleProjectId())
+		pterm.Println("👉 Your product has a new service account")
+		pterm.Printf("👉 Retrieve a copy of your repository using the command: " + pterm.LightYellow(fmt.Sprintf("alis product get %s.%s \n", organisationID, productID)))
 		pterm.Println("👉 Open the repository in your IDE and create your first empty commit.")
 	},
 	Args:    validateProductArg,
