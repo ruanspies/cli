@@ -46,15 +46,19 @@ var createOrgCmd = &cobra.Command{
 		ptermTip.Println("The following outlines the prerequisites for creating an organisation:")
 		err := pterm.DefaultBulletList.WithItems([]pterm.BulletListItem{
 			{Level: 0, Text: "SETUP YOUR DOMAIN", TextStyle: pterm.NewStyle(pterm.FgLightYellow), Bullet: "1:", BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Register " + organisationID + ".services domain.  Ideally at https://domains.google which will make verification easier.", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Create a Cloud Identity account at https://console.cloud.google.com/freetrial", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Add the domain identity." + organisationID + ".services at https://admin.google.com/u/0/ac/domains/manage ", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Register " + organisationID + ".services domain.  Ideally at https://domains.google which will make domain verification easier.", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Create a Cloud Identity account at https://console.cloud.google.com/freetrial", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Add the domain identity." + organisationID + ".services at https://admin.google.com/u/0/ac/domains/manage ", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
 			{Level: 0, Text: "SETUP YOUR BILLING ACCOUNT", TextStyle: pterm.NewStyle(pterm.FgLightYellow), Bullet: "2:", BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Create at least one billing account at https://console.cloud.google.com/billing", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Create at least one billing account at https://console.cloud.google.com/billing and take note of the Billing Account ID", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Grant the admin@alis.exchange group Billing Account User access", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
 			{Level: 0, Text: "SETUP YOUR PROJECTS FOLDER", TextStyle: pterm.NewStyle(pterm.FgLightYellow), Bullet: "3:", BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Navigate to https://console.cloud.google.com/cloud-resource-manager and ensure that you have 'Folder Admin' rights in your organisation.", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Create a folder 'alis exchange' and take note of the folder ID", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
-			{Level: 1, Text: "Grant admin@alis.exchange Owner access to the newly created folder.", TextStyle: pterm.NewStyle(pterm.FgLightYellow), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Navigate to https://console.cloud.google.com/cloud-resource-manager and ensure that you have 'Folder Admin' rights in your organisation.", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "Create a folder 'alis exchange' and take note of the folder ID", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 1, Text: "At this folder level, grant admin@alis.exchange the following Roles:", TextStyle: pterm.NewStyle(pterm.FgLightWhite), BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 2, Text: "Owner", TextStyle: pterm.NewStyle(pterm.FgLightWhite), Bullet: "-", BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 2, Text: "Folder Admin", TextStyle: pterm.NewStyle(pterm.FgLightWhite), Bullet: "-", BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
+			{Level: 2, Text: "Project Creator", TextStyle: pterm.NewStyle(pterm.FgLightWhite), Bullet: "-", BulletStyle: pterm.NewStyle(pterm.FgLightYellow)},
 		}).Render()
 		if err != nil {
 			pterm.Error.Println(err)

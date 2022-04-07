@@ -6,6 +6,5 @@ resource "google_artifact_registry_repository_iam_member" "neurons" {
   repository = "neurons"
   role = "roles/artifactregistry.reader"
   member = "serviceAccount:service-${google_project.product_deployment.number}@serverless-robot-prod.iam.gserviceaccount.com"
-  depends_on = [
-    google_project_service.run_googleapis_com]
+  depends_on = [google_project_service.product-services]
 }

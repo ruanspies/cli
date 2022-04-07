@@ -15,5 +15,5 @@ resource "google_project_iam_member" "project" {
 resource "google_project_iam_member" "product" {
   project = google_project.product_deployment.project_id
   role = "roles/iam.serviceAccountKeyAdmin"
-  member = "group:${data.terraform_remote_state.product.outputs.groupid}"
+  member = "group:${var.ALIS_OS_PRODUCT_PROJECT}@identity.${var.ALIS_OS_DOMAIN}"
 }
