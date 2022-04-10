@@ -33,7 +33,7 @@ var (
 	ptermInput           pterm.PrefixPrinter
 )
 
-const VERSION = "3.7.8"
+const VERSION = "3.7.9"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -52,7 +52,7 @@ var rootCmd = &cobra.Command{
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
 		// Randomly update the commandline one in every 21 times.
 		if rand.Intn(21) == 7 {
-			pterm.Info.Println("checking for updates...")
+			pterm.Info.Println("running a random CLI update check...")
 			cmds := "alis update"
 			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 			_, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
