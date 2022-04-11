@@ -41,5 +41,5 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   project = google_cloud_run_service.default.project
   service = google_cloud_run_service.default.name
   role = "roles/run.invoker"
-  member = "group:${var.ALIS_OS_PROJECT}@alis.exchange"
+  member = "group:${var.ALIS_OS_PROJECT}@identity.${var.ALIS_OS_DOMAIN}"
 }
