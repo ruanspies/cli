@@ -443,7 +443,7 @@ func askUserProductEnvs(envs []*pbProducts.Product_Env) ([]*pbProducts.Product_E
 		pterm.Info.Println("Please provide new values for the above variables:\n- leave blank (enter) to keep unchanged\n- 'REMOVE' to remove")
 
 		for _, env := range envs {
-			input, err := askUserString(env.GetName()+": ", `^.+$`)
+			input, err := askUserString(env.GetName()+": ", `^.*$`)
 			if err != nil {
 				return nil, err
 			}
@@ -514,7 +514,7 @@ func askUserNeuronEnvs(envs []*pbProducts.Neuron_Env) ([]*pbProducts.Neuron_Env,
 		pterm.Info.Println("Please provide new values for the above variables:\n- leave blank (enter) to keep unchanged\n- 'REMOVE' to remove")
 
 		for _, env := range envs {
-			input, err := askUserString(env.GetName()+": ", `^.+$`)
+			input, err := askUserString(env.GetName()+": ", `^.*$`)
 			if err != nil {
 				return nil, err
 			}
