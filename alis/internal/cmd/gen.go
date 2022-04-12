@@ -298,11 +298,13 @@ This file is a serialised google.protobuf.FileDescriptorSet object representing 
 		}
 
 		// generate ProductDescriptorFile at the relevant resource level.
-		err := genDescriptorFile(name)
+		descriptorPath, err := genDescriptorFile(name)
 		if err != nil {
 			pterm.Error.Println(err)
 			return
 		}
+
+		pterm.Info.Printf("Generated %s\n", descriptorPath)
 
 		return
 	},

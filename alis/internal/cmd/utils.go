@@ -768,7 +768,7 @@ func genProductDescriptorFile(product string) error {
 }
 
 // genDescriptorFile generates a descriptor.pb file at the neuron level.
-func genDescriptorFile(name string) error {
+func genDescriptorFile(name string) (string, error) {
 	// parse the resource name
 	nameParts := strings.Split(name, "/")
 	organisationID = nameParts[1]
@@ -789,9 +789,10 @@ func genDescriptorFile(name string) error {
 	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("error %s, with command line output:\n %s", err, out)
+		return "", fmt.Errorf("error %s, with command line output:\n %s", err, out)
 	}
-	return nil
+
+	return homeDir + "/alis.exchange/" + organisationID + "/proto/" + protoPath + "/descriptor.pb", nil
 }
 
 // validGitDirectory check that the provided directory is a valid git directory.
