@@ -357,6 +357,22 @@ func validateNeuronArg(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// validateOrgOrProductOrNeuron is a utility used by the cobra command to validate Arguments.
+func validateOrgOrProductOrNeuron(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		pterm.Error.Println(`requires an organisation product or neuron argument in the format: ^([a-z][a-z0-9]{2,7})(\.[a-z]{2})*(\.(resources|services)-[a-z]+-v[0-9]+)*$`)
+		return fmt.Errorf("")
+	}
+
+	err := validateArgument(args[0], `^([a-z][a-z0-9]{2,7})(\.[a-z]{2})*(\.(resources|services)-[a-z]+-v[0-9]+)*$`)
+	if err != nil {
+		pterm.Error.Println(err)
+		return fmt.Errorf("")
+	}
+
+	return nil
+}
+
 // createProductDeployment creates a new product deployment and waits until done.
 func createProductDeployment(ctx context.Context, productName string) (*pbProducts.ProductDeployment, error) {
 
@@ -743,6 +759,33 @@ func genProductDescriptorFile(product string) error {
 	// The descriptor.pb at product level represents all the underlying neurons.
 	cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
 		"protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_imports --include_source_info $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error %s, with command line output:\n %s", err, out)
+	}
+	return nil
+}
+
+// genDescriptorFile generates a descriptor.pb file at the neuron level.
+func genDescriptorFile(name string) error {
+	// parse the resource name
+	nameParts := strings.Split(name, "/")
+	organisationID = nameParts[1]
+	protoPath := nameParts[1]
+	// update the path if Product is provided
+	if len(nameParts) >= 3 {
+		protoPath += "/" + nameParts[3]
+	}
+	// update the path if Neuron is provided
+	if len(nameParts) >= 5 {
+		// Neuron name resources-events-v1 -> resources/events/v1
+		protoPath += "/" + strings.ReplaceAll(nameParts[5], "-", "/")
+	}
+
+	// Generate the descriptor.pb at the relevant org/product/neuron level
+	// The descriptor.pb at product level represents all the underlying neurons.
+	cmds := "protoc --descriptor_set_out=$HOME/alis.exchange/" + organisationID + "/proto/" + protoPath + "/descriptor.pb -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto --include_imports --include_source_info $(find $HOME/alis.exchange/" + organisationID + "/proto/" + protoPath + " -iname \"*.proto\")"
 	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
 	if err != nil {

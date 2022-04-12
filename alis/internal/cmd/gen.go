@@ -249,9 +249,69 @@ the latest protobufs from the repo into your gRPC service.`),
 	},
 }
 
+// descriptorGenCmd represents the descriptor command
+var descriptorGenCmd = &cobra.Command{
+	Use:   "descriptor",
+	Short: pterm.Blue("Generates a file descriptor for the specified organisation, product or neuron."),
+	Long: pterm.Green(
+		`This method uses the 'protoc --descriptor_set_out=...' command line to generate a local 'descriptor.pb' file.
+This file is a serialised google.protobuf.FileDescriptorSet object representing all the relevant proto files.`),
+	Example: pterm.LightYellow("alis gen descriptor {orgID}.{productID}.{neuronID}"),
+	Args:    validateOrgOrProductOrNeuron,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		var name string
+		argParts := strings.Split(args[0], ".")
+
+		// The length of the argument parts determine whether the request is at organisation, product or neuron level.
+		switch len(argParts) {
+		case 1:
+			// Retrieve the organisation resource
+			name = "organisations/" + argParts[0]
+			organisation, err := alisProductsClient.GetOrganisation(cmd.Context(),
+				&pbProducts.GetOrganisationRequest{Name: name})
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+			pterm.Debug.Printf("Get Organisation:\n%s\n", organisation)
+		case 2:
+			// Retrieve the product resource
+			name = "organisations/" + argParts[0] + "/products/" + argParts[1]
+			product, err := alisProductsClient.GetProduct(cmd.Context(), &pbProducts.GetProductRequest{Name: name})
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+			pterm.Debug.Printf("Get Product:\n%s\n", product)
+		case 3:
+			// Retrieve the neuron resource
+			name = "organisations/" + argParts[0] + "/products/" + argParts[1] + "/neurons/" + argParts[2]
+			neuron, err := alisProductsClient.GetNeuron(cmd.Context(),
+				&pbProducts.GetNeuronRequest{
+					Name: name})
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+			pterm.Debug.Printf("Get Neuron:\n%s\n", neuron)
+		}
+
+		// generate ProductDescriptorFile at the relevant resource level.
+		err := genDescriptorFile(name)
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
+		return
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(genCmd)
 	genCmd.AddCommand(protobufGenCmd)
+	genCmd.AddCommand(descriptorGenCmd)
 	neuronCmd.SilenceUsage = true
 	neuronCmd.SilenceErrors = true
 
