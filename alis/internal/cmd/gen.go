@@ -4,14 +4,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/pterm/pterm"
-	"github.com/spf13/cobra"
-	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
+	"google.golang.org/genproto/googleapis/longrunning"
+	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
 // neuronCmd represents the neuron command
@@ -29,7 +32,7 @@ var protobufGenCmd = &cobra.Command{
 	Use:   "protobuf",
 	Short: pterm.Blue("Generates the protocol buffers files for a specified language.  Golang is the default."),
 	Long: pterm.Green(
-		`This method uses the 'genproto-go' command line to generate protocol buffers 
+		`This method uses the 'genproto-go' command line to generate protocol buffers
 for the specified neuron.  These are generated locally only and should be used for local development of your gRPC services.
 
 These are used in combination with the 'Replace ...' command in your go.mod file to 'point' to the local, instead of the
@@ -310,14 +313,318 @@ This file is a serialised google.protobuf.FileDescriptorSet object representing 
 	},
 }
 
+var (
+	productsDocsGenCustomFlag bool
+	productsDocsGenPublicFlag bool
+)
+
+// productDocsGenCmd represents the gendocs command
+var productDocsGenCmd = &cobra.Command{
+	Use:   "docs",
+	Short: pterm.Blue("Generates documentation files for all proto files in the specified product."),
+	Long: pterm.Green(
+		`This method uses the 'gendocs' protoc plugin to generate documentation for the
+specified product and publishes it at a URL specified.`),
+	Example: pterm.LightYellow("alis gen docs {orgID}.{productID}"),
+	Args:    validateProductArg,
+	Run: func(cmd *cobra.Command, args []string) {
+		organisationID = strings.Split(args[0], ".")[0]
+		productID = strings.Split(args[0], ".")[1]
+
+		// Retrieve the organisation resource
+		organisation, err := alisProductsClient.GetOrganisation(cmd.Context(),
+			&pbProducts.GetOrganisationRequest{Name: "organisations/" + organisationID})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Printf("GetOrganisation:\n%s\n", organisation)
+
+		// Retrieve the product resource
+		product, err := alisProductsClient.GetProduct(cmd.Context(),
+			&pbProducts.GetProductRequest{Name: "organisations/" + organisationID + "/products/" + productID})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Printf("GetProduct:\n%s\n", product)
+
+		var envs []*pbProducts.Neuron_Env
+		var op *longrunning.Operation
+
+		pterm.Println("")
+		pterm.Info.Println("1. First select a product deployment for which to generate documentation.")
+		ptermTip.Println("The documentation will be generated for all the neuron versions in the deployment.")
+		deployment, err := selectProductDeployment(cmd.Context(), product.GetName())
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Printf("GetDeployment:\n%s\n", deployment)
+		envs = append(envs, &pbProducts.Neuron_Env{
+			Name:  "ALIS_OS_DOCS_PRODUCT_DEPLOYMENT",
+			Value: deployment.GetName(),
+		})
+
+		pterm.Println("")
+		pterm.Info.Println("2. Specification of the documentation visibility scope.")
+		var apiVisibility string
+		if !productsDocsGenPublicFlag && !productsDocsGenCustomFlag {
+
+			scope, err := askUserString("Specify either 'PUBLIC' or 'CUSTOM': ", "^(PUBLIC|CUSTOM)$")
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+
+			if scope == "PUBLIC" {
+				productsDocsGenPublicFlag = true
+			} else if scope == "CUSTOM" {
+				productsDocsGenCustomFlag = true
+			} else {
+				pterm.Error.Println("Invalid scope specified.")
+				return
+			}
+		}
+
+		if productsDocsGenPublicFlag {
+			ptermTip.Println("PUBLIC restriction scope will only contain documentation where there are no visibility restrictions specified. \n" +
+				"If you want to restrict the visibility of the documentation, ensure that you have added visibility\n" +
+				"restrictions to the proto.")
+			pterm.Println("")
+			pterm.Warning.Println("Specifying a PUBLIC restriction scope will make the generated documentation publicly available and " +
+				"generate content on all the proto content that do not contain google.api.visibility options.")
+
+			confirmPublic, err := askUserString("Are you sure you want to generate public documentation? (y/n): ", `^[y|n]$`)
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+
+			if confirmPublic == "n" {
+				productsDocsGenPublicFlag = false
+				productsDocsGenCustomFlag = true
+				pterm.Println("")
+				pterm.Info.Println("Alright. We will restricting access to the documentation and allow you to specify custom scopes.")
+				pterm.Println("")
+			}
+		}
+
+		if productsDocsGenCustomFlag {
+			ptermTip.Println("CUSTOM will only contain documentation where the exact restriction scope is met and access to the" +
+				"documentation will be regulated by a IAM group.")
+			apiVisibility, err = askUserString("Specify the exact custom visibility scopes that should be matched."+
+				"Multiple values may be seperated by a comma (Example: INTERNAL, PREVIEW): ", `^[A-Za-z0-9-, ]+$`)
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+			pterm.Debug.Println("Custom API visibility scope: ", apiVisibility)
+
+			envs = append(envs, &pbProducts.Neuron_Env{
+				Name:  "ALIS_OS_DOCS_RESTRICTION",
+				Value: apiVisibility,
+			})
+		} else {
+			pterm.Error.Println("Invalid scope specified.")
+			return
+		}
+
+		////TODO: Requires definition of resource prior to implementation
+		//pterm.Info.Println("3. WELCOME TEXT\n The documentation contains a generic welcome text that orientates users" +
+		//	"on how to use the documentation.")
+		//welcomeText, err := askUserString("Press enter to keep the generic text or type text to specify your own.", `.*`)
+		//if err != nil {
+		//	pterm.Error.Println(err)
+		//	return
+		//}
+		//pterm.Debug.Println("Welcome text ", welcomeText)
+
+		////TODO: Requires definition of resource prior to implementation
+		//pterm.Info.Println("4. CUSTOM URL\n The documentation allows you to redirect readers to a custom URL such as your" +
+		//	"product's marketing page")
+		//customURL, err := askUserString("Full URL:", `.*`)
+		//if err != nil {
+		//	pterm.Error.Println(err)
+		//	return
+		//}
+		//pterm.Debug.Println("Welcome text ", customURL)
+		pterm.Println("")
+		pterm.Info.Println("3. Specify where the base URL to host the documentation")
+		dnsConfig, err := selectDnsConfig(cmd.Context())
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Println("DNS Config ", dnsConfig)
+		envs = append(envs, &pbProducts.Neuron_Env{
+			Name:  "ALIS_OS_DNS_PROJECT",
+			Value: dnsConfig.project,
+		})
+		envs = append(envs, &pbProducts.Neuron_Env{
+			Name:  "ALIS_OS_DNS_ZONE",
+			Value: dnsConfig.zoneName,
+		})
+		pterm.Println("")
+		pterm.Info.Println("4. Specify the custom URL that the documentation should be hosted on.")
+		ptermTip.Println("Has to end with '" + dnsConfig.baseURL + "' (Example: myproduct." + dnsConfig.baseURL + ")")
+		docsCustomURL, err := askUserString("Specify the custom URL: ", `[a-z.-]\.`+dnsConfig.baseURL)
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Println("Custom URL: ", docsCustomURL)
+		envs = append(envs, &pbProducts.Neuron_Env{
+			Name:  "ALIS_OS_DNS_RECORD",
+			Value: docsCustomURL,
+		})
+
+		// Create new product deployment
+		// TODO: This should be made way more elegant for outside users.
+		prodDeployment, err := createProductDeployment(cmd.Context(), "organisations/alis/products/ex")
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		pterm.Debug.Println("New product deployment created: ", prodDeployment)
+
+		// Retrieve the latest version
+		neuronID := "resources-docs-v1"
+		neuronName := "organisations/alis/products/ex/neurons/" + neuronID
+		res, err := alisProductsClient.ListNeuronVersions(cmd.Context(), &pbProducts.ListNeuronVersionsRequest{
+			Parent:   neuronName,
+			ReadMask: &fieldmaskpb.FieldMask{Paths: []string{"version"}},
+		})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+		if len(res.GetNeuronVersions()) == 0 {
+			pterm.Error.Println("there are no versions available, please run `alis neron build ...` to create a version")
+			return
+		}
+
+		latestVersion := res.GetNeuronVersions()[0].GetVersion()
+		pterm.Debug.Println("Latest version: ", latestVersion)
+		pterm.Debug.Println("Envs: ", envs)
+
+		op, err = alisProductsClient.CreateNeuronDeployment(cmd.Context(), &pbProducts.CreateNeuronDeploymentRequest{
+			Parent: prodDeployment.GetName(),
+			NeuronDeployment: &pbProducts.NeuronDeployment{
+				Name:    neuronName + "/versions/" + latestVersion,
+				Version: latestVersion,
+				Envs:    envs,
+			},
+			NeuronDeploymentId: neuronID,
+		})
+		if err != nil {
+			pterm.Error.Println(err)
+			return
+		}
+
+		// check if we need to wait for operation to complete.
+		if asyncFlag {
+			pterm.Debug.Printf("GetOperation:\n%s\n", op)
+			pterm.Success.Printf("Launched service in async mode.\n see long-running operation " + op.GetName() + " to monitor state\n")
+		} else {
+
+			successMessage := "Documentation has been deployed to: https://" + docsCustomURL + ".\n\n" +
+				"NOTE that the DNS propagation and SSL certificate issuing can take up to 24 hours before the " +
+				"site is available."
+
+			if apiVisibility != "" {
+				successMessage = successMessage + "\n" +
+					"Manage access to documentation at: " + "https://groups.google.com/a/alis.exchange/g/" + prodDeployment.GetGoogleProjectId() + "/members"
+			}
+
+			successMessage = successMessage + "\n\n 🚩 For the documentation content to be generated, access to the documentation needs to be granted to: " +
+				"alis-exchange@" + prodDeployment.GetGoogleProjectId() + ".iam.gserviceaccount.com in the following group:\n" +
+				"https://console.cloud.google.com/iam-admin/groups/01fob9te30m28ba?organizationId=666464741197 \n" +
+				"Contact any of the group managers for assistance."
+			// wait for the long-running operation to complete.
+			err := wait(cmd.Context(), op, "Creating documentation for "+product.GetName(), successMessage, 300, true)
+			if err != nil {
+				pterm.Error.Println(err)
+				return
+			}
+		}
+
+		///////////////////////////////
+		///////////////////////////////
+		//// Generate the index.html
+		//cmds := "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
+		//	"protoc --plugin=protoc-gen-doc=$HOME/go/bin/protoc-gen-doc --doc_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " --doc_opt=html,docs.html -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		//pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		//out, err := exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
+		//if err != nil {
+		//	pterm.Error.Printf(fmt.Sprintf("%s", out))
+		//	pterm.Error.Println(err)
+		//	return
+		//}
+		//
+		//// Generate markdown
+		//cmds = "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
+		//	"protoc --plugin=protoc-gen-doc=$HOME/go/bin/protoc-gen-doc --doc_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " --doc_opt=markdown,docs.md -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		//pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		//out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
+		//if err != nil {
+		//	pterm.Error.Printf(fmt.Sprintf("%s", out))
+		//	pterm.Error.Println(err)
+		//	return
+		//}
+		//// Generate json
+		//cmds = "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
+		//	"protoc --plugin=protoc-gen-doc=$HOME/go/bin/protoc-gen-doc --doc_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " --doc_opt=json,docs.json -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		//pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+		//out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
+		//if err != nil {
+		//	pterm.Error.Printf(fmt.Sprintf("%s", out))
+		//	pterm.Error.Println(err)
+		//	return
+		//}
+		//
+		////// Generate openapi description
+		////cmds = "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev &&" +
+		////	"protoc --openapi_out=$HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto $(find $HOME/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + " -iname \"*.proto\")"
+		////out, err = exec.CommandContext(cmd.Context(), "bash", "-c", cmds).CombinedOutput()
+		////if err != nil {
+		////	pterm.Error.Printf(fmt.Sprintf("%s", out))
+		////	pterm.Error.Println(err)
+		////	return
+		////}
+		//
+		//if strings.Contains(fmt.Sprintf("%s", out), "warning") {
+		//	pterm.Warning.Print(fmt.Sprintf("Generating documentation from protos...\n%s", out))
+		//} else {
+		//	pterm.Debug.Print(fmt.Sprintf("%s\n", out))
+		//}
+		//
+		//pterm.Success.Printf("Generated documentation at %s\n", homeDir+"/alis.exchange/"+organisationID+"/products/"+productID)
+
+		return
+
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(genCmd)
 	genCmd.AddCommand(protobufGenCmd)
 	genCmd.AddCommand(descriptorGenCmd)
+	genCmd.AddCommand(productDocsGenCmd)
 	neuronCmd.SilenceUsage = true
 	neuronCmd.SilenceErrors = true
 
 	protobufGenCmd.Flags().BoolVarP(&pushProtocolBuffers, "publish", "p", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
+
+	productDocsGenCmd.Flags().BoolVar(&productsDocsGenCustomFlag, "custom", false, pterm.Green("Set custom visibility scopes for the documentation being generated."))
+	productDocsGenCmd.Flags().BoolVar(&productsDocsGenPublicFlag, "public", false, pterm.Green("Set documentation visibility scope as public."))
+	rootCmd.AddCommand(&cobra.Command{
+		Use:    "iloveprotos",
+		Hidden: true,
+		Run: func(cmd *cobra.Command, args []string) {
+			generateParsedText()
+		},
+	})
 
 	// protobuf flags
 	protobufGenCmd.Flags().BoolVarP(&genprotoGo, "go", "", true, pterm.Green("Generate the protocol buffers for Golang"))

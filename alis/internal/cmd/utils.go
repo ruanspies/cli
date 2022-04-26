@@ -5,15 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pterm/pterm"
-	"github.com/spf13/cobra"
-	pbOperations "go.protobuf.alis.alis.exchange/alis/os/resources/operations/v1"
-	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
-	"google.golang.org/genproto/googleapis/longrunning"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/descriptorpb"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -23,6 +14,16 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pterm/pterm"
+	"github.com/spf13/cobra"
+	pbOperations "go.protobuf.alis.alis.exchange/alis/os/resources/operations/v1"
+	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
+	"google.golang.org/genproto/googleapis/longrunning"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // GoMod represents content in a go.mod file.
@@ -284,6 +285,106 @@ func selectProductDeployments(ctx context.Context, parent string) ([]*pbProducts
 	}
 }
 
+// selectProductDeployment retrieves a list of deployments for a particular product and
+// ask the user to select a single one.
+func selectProductDeployment(ctx context.Context, parent string) (*pbProducts.ProductDeployment, error) {
+	// list the deployments and ask user to select one.
+	productDeployments, err := alisProductsClient.ListProductDeployments(ctx, &pbProducts.ListProductDeploymentsRequest{
+		Parent: parent,
+	})
+
+	if len(productDeployments.GetProductDeployments()) == 0 {
+		return nil, fmt.Errorf("the product (%s) has no deployments", parent)
+	}
+
+	table := pterm.TableData{{"Index", "Display Name", "Environment", "Deployment Project", "Owner", "Version", "State"}}
+	for i, depl := range productDeployments.GetProductDeployments() {
+
+		row := []string{strconv.Itoa(i), depl.GetDisplayName(), depl.GetEnvironment().String(), depl.GetGoogleProjectId(), depl.GetOwner(), depl.GetVersion(), depl.GetState().String()}
+
+		if depl.GetState() != pbProducts.ProductDeployment_RUNNING {
+			for i, col := range row {
+				row[i] = pterm.Gray(col)
+			}
+		}
+		table = append(table, row)
+	}
+
+	err = pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(table).Render()
+	if err != nil {
+		return nil, err
+	}
+
+	input, err := askUserString("Please select one deployment from the list by using the\n index value (Example: 1): ",
+		`^*[0-9]+$`)
+	if err != nil {
+		return nil, err
+	}
+
+	i, err := strconv.Atoi(input)
+	if err != nil {
+		return nil, err
+	}
+	if i >= len(productDeployments.GetProductDeployments()) {
+		return nil, status.Errorf(codes.InvalidArgument, "%v is not a valid index selection", i)
+	}
+
+	return productDeployments.GetProductDeployments()[i], nil
+}
+
+type DnsConfig struct {
+	expectedURL string
+	project     string
+	zoneName    string
+	baseURL     string
+}
+
+var availableDnsConfigs = []DnsConfig{
+	{
+		expectedURL: "{customPath}.docs.alis.technology",
+		project:     "alis-mk-product-dnzag9f",
+		zoneName:    "default",
+		baseURL:     "docs.alis.technology",
+	},
+	{
+		expectedURL: "{customPath}.docs.alis.exchange",
+		project:     "alis-os",
+		zoneName:    "alis-exchange",
+		baseURL:     "docs.alis.exchange",
+	},
+}
+
+// selectCloudDNS retrieves a list of current available domains for which to manage the
+func selectDnsConfig(ctx context.Context) (*DnsConfig, error) {
+	table := pterm.TableData{{"Index", "Expected URL", "Google Project", "DNS Managed Zone"}}
+	for i, config := range availableDnsConfigs {
+
+		row := []string{strconv.Itoa(i), config.expectedURL, config.project, config.zoneName}
+		table = append(table, row)
+	}
+
+	err := pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(table).Render()
+	if err != nil {
+		return nil, err
+	}
+
+	input, err := askUserString("Please select a which base URL to use for the documentation: ",
+		`^*[0-9]+$`)
+	if err != nil {
+		return nil, err
+	}
+
+	i, err := strconv.Atoi(input)
+	if err != nil {
+		return nil, err
+	}
+	if i >= len(availableDnsConfigs) {
+		return nil, status.Errorf(codes.InvalidArgument, "%v is not a valid index selection", i)
+	}
+
+	return &availableDnsConfigs[i], nil
+}
+
 // askUserString ask the user for feedback and returns the response as a string.
 func askUserString(question string, regex string) (string, error) {
 
@@ -308,6 +409,25 @@ func askUserString(question string, regex string) (string, error) {
 	}
 
 	return input, nil
+}
+
+func generateParsedText() {
+	s, _ := pterm.DefaultBigText.WithLetters(
+		pterm.NewLettersFromString("h e l l o"),
+	).Srender()
+	pterm.DefaultCenter.Println(s) // Print BigLetters with the default CenterPrinter
+
+	s, _ = pterm.DefaultBigText.WithLetters(
+		pterm.NewLettersFromString("h u m a n"),
+	).Srender()
+	pterm.DefaultCenter.Println(s)
+
+	pterm.DefaultCenter.WithCenterEachLineSeparately().Println("You found me ❤️")
+
+	pterm.DefaultCenter.Println("alis", pterm.Red("."), "exchange")
+
+	pterm.DefaultCenter.Println("01101000 01100001 01101001 01101100\n00100000 01110011 01110101 01110000\n01110010 01100101 01101101 01100101\n00100000 01101100 01100101 01100001\n01100100 01100101 01110010 00100000\n01001010 01100001 01101110 00101110")
+
 }
 
 // validateOrgArg is a utility used by the cobra command to validate Arguments.
