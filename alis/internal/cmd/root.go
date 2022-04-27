@@ -4,17 +4,19 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"log"
+	"math/rand"
+	"os"
+	"os/exec"
+
 	"github.com/mitchellh/go-homedir"
 	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	pbOperations "go.protobuf.alis.alis.exchange/alis/os/resources/operations/v1"
 	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
+	pbParsers "go.protobuf.alis.alis.exchange/alis/os/services/parsers/v1"
 	"google.golang.org/grpc"
-	"log"
-	"math/rand"
-	"os"
-	"os/exec"
 )
 
 var (
@@ -27,6 +29,7 @@ var (
 	homeDir              string
 	asyncFlag            bool
 	alisProductsClient   pbProducts.ServiceClient
+	alisParsersClient    pbParsers.ParserServiceClient
 	alisOperationsClient pbOperations.ServiceClient
 	TemplateFs           embed.FS
 	ptermTip             pterm.PrefixPrinter
@@ -100,6 +103,13 @@ func init() {
 		log.Fatalf("alis.NewServerConnection: %s", err)
 	}
 	alisProductsClient = pbProducts.NewServiceClient(connProducts)
+	// Initialise alis Products client
+	var connParsers *grpc.ClientConn
+	connParsers, err = NewServerConnection(context.Background(), "services-parsers-v1-ntaj7kcaca-ew.a.run.app")
+	if err != nil {
+		log.Fatalf("alis.NewServerConnection: %s", err)
+	}
+	alisParsersClient = pbParsers.NewParserServiceClient(connParsers)
 
 	// Initialise alis Services client
 	var connOperations *grpc.ClientConn

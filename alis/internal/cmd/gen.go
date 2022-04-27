@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -26,6 +27,10 @@ var genCmd = &cobra.Command{
 		pterm.Error.Println("a valid command is missing\nplease run 'alis gen -h' for details.")
 	},
 }
+
+var (
+	pushPublicProtocolBuffers bool
+)
 
 // protobufGenCmd represents the genproto command
 var protobufGenCmd = &cobra.Command{
@@ -71,32 +76,78 @@ the latest protobufs from the repo into your gRPC service.`),
 
 		// Generate the protocol buffers for Golang
 		if genprotoGo {
-			// set required path variables
-			neuronProtobufFullPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
-			neuronProtoFullPath := homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
-			protobufGoRepoPath := homeDir + "/alis.exchange/" + organisationID + "/protobuf/go"
 
-			// Clear any uncommitted changes to the repository
-			// This ensures that we are able to push protobuf changes generated in the next section in all scenarios
-			// When working on multiple neurons at the same time, there could be other uncommitted changes which will
-			// cause a merge conflict when committing the new protocol buffers in the push section below.
-			if pushProtocolBuffers {
-				cmds := "git -C " + protobufGoRepoPath + " reset --hard"
+			var (
+				neuronProtobufFullPath string
+				neuronProtoFullPath    string
+				protobufGoRepoPath     string
+
+				cmds string
+			)
+
+			// set required path variables
+			if pushPublicProtocolBuffers {
+				neuronProtobufFullPath = homeDir + "/alis.exchange/" + organisationID + "/public/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+				neuronProtoFullPath = homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+				protobufGoRepoPath = homeDir + "/alis.exchange/" + organisationID + "/public/protobuf/go"
+				relativeProtoPath := organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+
+				if pushProtocolBuffers {
+					err := clearUncommittedRepoChanges(protobufGoRepoPath)
+					if err != nil {
+						pterm.Error.Println(err)
+						return
+					}
+				}
+
+				cmds = "rm -rf " + neuronProtobufFullPath + " && " +
+					"mkdir -p " + neuronProtobufFullPath
 				pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 				out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+				if strings.Contains(fmt.Sprintf("%s", out), "warning") {
+					pterm.Warning.Print(fmt.Sprintf("removing existing local directory content...\n%s", out))
+				}
+				pterm.Debug.Printf("Cleared the local files in directory: %s\n", neuronProtobufFullPath)
+
+				var relativeProtoPaths string
+				files, err := ioutil.ReadDir(neuronProtoFullPath)
+				for _, f := range files {
+					if strings.HasSuffix(f.Name(), ".proto") {
+						relativeProtoPaths += relativeProtoPath + "/" + f.Name() + " "
+					}
+				}
+				pterm.Debug.Printf("Relative protopaths: %s\n", relativeProtoPaths)
+
+				descriptorPath, err := generatePublicLocalDescriptorFileFromNeuron(cmd.Context(), neuron.GetName(), neuronProtobufFullPath)
 				if err != nil {
-					pterm.Error.Printf(fmt.Sprintf("%s", out))
 					pterm.Error.Println(err)
 					return
 				}
-			}
+				pterm.Debug.Println("Successfully created public scoped descriptor.pb. Destination: %s", *descriptorPath)
 
-			// Clear all files in the relevant neuron folder.
-			// TODO: refactor the use of GOPRIVATE envs.
-			cmds := "rm -rf " + neuronProtobufFullPath + " && " +
-				"mkdir -p " + neuronProtobufFullPath + " && " +
-				"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
-				"protoc --go_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go_opt=paths=source_relative --go-grpc_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go-grpc_opt=paths=source_relative -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
+				// Use the public scoped descriptor.pb to generate the Go files
+				cmds = "go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
+					"protoc --go_out=" + protobufGoRepoPath + " --go_opt=paths=source_relative --go-grpc_out=" + protobufGoRepoPath + " --go-grpc_opt=paths=source_relative -I=$HOME/alis.exchange/google/proto --descriptor_set_in=" + *descriptorPath + " " + relativeProtoPaths + " && " +
+					"rm -f " + *descriptorPath // remove the public scoped descriptor.pb file
+
+			} else {
+				neuronProtobufFullPath = homeDir + "/alis.exchange/" + organisationID + "/protobuf/go/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+				neuronProtoFullPath = homeDir + "/alis.exchange/" + organisationID + "/proto/" + organisationID + "/" + productID + "/" + strings.ReplaceAll(neuronID, "-", "/")
+				protobufGoRepoPath = homeDir + "/alis.exchange/" + organisationID + "/protobuf/go"
+
+				if pushProtocolBuffers {
+					err := clearUncommittedRepoChanges(protobufGoRepoPath)
+					if err != nil {
+						pterm.Error.Println(err)
+						return
+					}
+				}
+
+				cmds = "rm -rf " + neuronProtobufFullPath + " && " +
+					"mkdir -p " + neuronProtobufFullPath + " && " +
+					"go env -w GOPRIVATE=go.lib." + organisationID + ".alis.exchange,go.protobuf." + organisationID + ".alis.exchange,proto." + organisationID + ".alis.exchange,cli.alis.dev && " +
+					"protoc --go_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go_opt=paths=source_relative --go-grpc_out=$HOME/alis.exchange/" + organisationID + "/protobuf/go --go-grpc_opt=paths=source_relative -I=$HOME/alis.exchange/google/proto -I=$HOME/alis.exchange/" + organisationID + "/proto " + neuronProtoFullPath + "/*.proto"
+			}
 
 			pterm.Debug.Printf("Shell command:\n%s\n", cmds)
 			out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
@@ -116,7 +167,6 @@ the latest protobufs from the repo into your gRPC service.`),
 				pterm.Error.Println(err)
 				return
 			}
-
 			pterm.Success.Println("Generated Product Descriptor File")
 
 			// Publish to protobuf repository if not in local mode.
@@ -615,6 +665,7 @@ func init() {
 	neuronCmd.SilenceErrors = true
 
 	protobufGenCmd.Flags().BoolVarP(&pushProtocolBuffers, "publish", "p", false, pterm.Green("Generate the protocol buffers and push them to the protobuf repository"))
+	protobufGenCmd.Flags().BoolVar(&pushPublicProtocolBuffers, "public", false, pterm.Green("Generate public protocol buffers and push them to the public protobuf repository."))
 
 	productDocsGenCmd.Flags().BoolVar(&productsDocsGenCustomFlag, "custom", false, pterm.Green("Set custom visibility scopes for the documentation being generated."))
 	productDocsGenCmd.Flags().BoolVar(&productsDocsGenPublicFlag, "public", false, pterm.Green("Set documentation visibility scope as public."))
@@ -627,6 +678,6 @@ func init() {
 	})
 
 	// protobuf flags
-	protobufGenCmd.Flags().BoolVarP(&genprotoGo, "go", "", true, pterm.Green("Generate the protocol buffers for Golang"))
-	protobufGenCmd.Flags().BoolVarP(&genprotoPython, "python", "", false, pterm.Green("Generate the protocol buffers for Python"))
+	protobufGenCmd.Flags().BoolVar(&genprotoGo, "go", true, pterm.Green("Generate the protocol buffers for Golang"))
+	protobufGenCmd.Flags().BoolVar(&genprotoPython, "python", false, pterm.Green("Generate the protocol buffers for Python"))
 }

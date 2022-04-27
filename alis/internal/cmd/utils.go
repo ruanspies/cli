@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	pbOperations "go.protobuf.alis.alis.exchange/alis/os/resources/operations/v1"
 	pbProducts "go.protobuf.alis.alis.exchange/alis/os/resources/products/v1"
+	pbParsers "go.protobuf.alis.alis.exchange/alis/os/services/parsers/v1"
 	"google.golang.org/genproto/googleapis/longrunning"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -857,6 +858,61 @@ func getNeuronDescriptor(neuron string) (*descriptorpb.FileDescriptorSet, error)
 	}
 
 	return res, nil
+}
+
+func generatePublicLocalDescriptorFileFromNeuron(ctx context.Context, neuron string, protobufFullPath string) (*string, error) {
+
+	fds, err := getNeuronDescriptor(neuron)
+	if err != nil {
+		return nil, err
+	}
+
+	req := pbParsers.GenerateRestrictionScopedFileDescriptorSetRequest{
+		FileDescriptorSet: fds,
+		Restriction:       nil,
+	}
+
+	fds, err = alisParsersClient.GenerateRestrictionScopedFileDescriptorSet(ctx, &req)
+	if err != nil {
+		return nil, fmt.Errorf("could not generate scoped FDS: ", err)
+	}
+
+	b, err := proto.Marshal(fds)
+	if err != nil {
+		return nil, err
+	}
+
+	//check if the directory exists, if not then create the directory
+	if _, err := os.Stat(protobufFullPath); os.IsNotExist(err) {
+		err = os.MkdirAll(protobufFullPath, 0755)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	fileName := protobufFullPath + "/descriptor.pb"
+	err = os.WriteFile(fileName, b, 0666)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fileName, nil
+}
+
+func clearUncommittedRepoChanges(repoPath string) error {
+	//// Clear any uncommitted changes to the repository
+	//// This ensures that we are able to push protobuf changes generated in the next section in all scenarios
+	//// When working on multiple neurons at the same time, there could be other uncommitted changes which will
+	//// cause a merge conflict when committing the new protocol buffers in the push section below.
+	cmds := "git -C " + repoPath + " reset --hard"
+	pterm.Debug.Printf("Shell command:\n%s\n", cmds)
+	out, err := exec.CommandContext(context.Background(), "bash", "-c", cmds).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("could not reset uncommitted changes: %s", err)
+	}
+	pterm.Debug.Printf("%s\n", out)
+
+	return nil
 }
 
 // generateRandomId generates a random id of the specified length.
